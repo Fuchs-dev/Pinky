@@ -1,0 +1,103 @@
+# Pinky – Architektur (ARCHITECTURE.md)
+
+## Überblick (Toplevel)
+Pinky besteht aus drei Hauptteilen:
+
+1. **Backend-Plattform** (zentral)
+- API + Business-Logik + Auth/Rollen
+- Datenbankzugriff
+- Hintergrundjobs (z. B. Zuteilung, Benachrichtigungen, KI-Splitting)
+
+2. **Web App (Aufgabensteller / Orga)**
+- Admin-/Organisator-UI (Planen, Erstellen, Zuteilen, Überblick)
+
+3. **Mobile App (Mitglieder)**
+- Micro-Tasks finden/übernehmen
+- Status ändern (open → assigned → done)
+- Push-Benachrichtigungen
+
+Wichtig: **Alle Regeln liegen im Backend.** Web und Mobile sind Clients und sollen keine eigene Business-Logik „erfinden“.
+
+---
+
+## Systembild (vereinfacht)
+[Web App] ----\
+               -> [Backend API + Auth + Logic] -> [PostgreSQL]
+[Mobile App] --/              |
+                               -> [Worker/Jobs] -> Notifications (Push/E-Mail)
+                               -> [Storage] (Dateien/Anhänge, optional)
+
+---
+
+## Technologie-Stack
+
+### Mobile App
+- **Flutter + Dart**
+- Architektur: feature-first Struktur
+- State: Riverpod (oder ähnlich)
+- Routing: go_router
+- API: HTTP Client (z. B. dio)
+- Tokens: secure storage
+
+### Web App
+- **Next.js + TypeScript**
+- UI-Styling: Tailwind CSS
+- API Calls: fetch/axios (einheitlich halten)
+- Keine Business-Logik im Client (nur UI + Validierung für UX)
+
+### Backend
+- **Node.js + TypeScript**
+- API: REST (für Beta einfach und klar)
+- Input-Validation: **Zod**
+- DB Layer: **Prisma**
+- DB: **PostgreSQL**
+- Worker: Node-Prozess / Job-Queue (für Beta erstmal simpel)
+
+---
+
+## Verantwortlichkeiten (ganz klar)
+
+### Backend ist verantwortlich für:
+- Authentifizierung (Login/Token)
+- Rollen & Berechtigungen (RBAC)
+- Datenmodelle und Konsistenz
+- Micro-Task-Logik (Erstellen, Splitten, Zuweisen, Status)
+- Audit/Activity-Log (wer hat was getan?)
+- Hintergrundjobs (Benachrichtigungen, Vorschläge, automatische Zuteilung)
+
+### Web App ist verantwortlich für:
+- UI für Organisatoren
+- Aufgaben/Projekte anlegen
+- KI-Splitting anstoßen und Vorschläge prüfen
+- Mitglieder/Rollen verwalten
+- Übersicht/Reports
+
+### Mobile App ist verantwortlich für:
+- Micro-Task Feed + Details
+- Übernehmen/Abschließen/Blockieren
+- eigene Übersicht (Meine Tasks)
+- Push-Handling und Deep Links
+
+---
+
+## Daten & Sicherheit (Grundregeln)
+- Alle Daten gehören zu genau **einer Organisation**
+- Zugriff nur über Membership + Rolle
+- **Keine Secrets ins Repo**
+- **Staging/Dev getrennt von Prod**
+- Clients speichern nur, was nötig ist (Tokens sicher speichern)
+
+---
+
+## Umgebungen
+- **local/dev:** lokale Entwicklung
+- **staging:** Testumgebung mit Testdaten (hier darf die KI „arbeiten“)
+- **prod:** echte Daten (streng geschützt)
+
+Für Beta reicht: local + staging.
+
+---
+
+## Repository-Struktur (empfohlen)
+Wir nutzen ein Monorepo, damit Backend/Web/Mobile und gemeinsame Doku zusammen bleiben.
+
