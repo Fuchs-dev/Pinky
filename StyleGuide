@@ -1,0 +1,278 @@
+# Pinky – Coding Styleguide & Konventionen (STYLEGUIDE.md)
+
+## Ziel
+Dieses Dokument definiert verbindliche Coding-Standards für das Pinky-Projekt.  
+Es stellt Konsistenz sicher und verhindert Wildwuchs – insbesondere bei KI-gestützter Entwicklung (Codex, Copilot, etc.).
+
+Die hier gezeigten **Beispiele sind verbindlich** und dienen als Referenz.
+
+---
+
+## Allgemeine Prinzipien
+- Lesbarkeit vor Cleverness
+- Klarheit vor Abstraktion
+- Explizit statt „magisch“
+- Eine Datei = eine Verantwortung
+- Code wird häufiger gelesen als geschrieben
+
+ **Schlecht:**
+```ts
+doStuff(data)
+
+**Gut**
+createMicroTasksFromTask(taskInput)
+
+Projektstruktur
+Feature-first statt Layer-first
+
+Code wird nach fachlichen Features organisiert, nicht nach technischen Layern.
+
+**Schlecht:**
+controllers/
+services/
+models/
+
+**Gut**
+tasks/
+  task.controller.ts
+  task.service.ts
+  task.schema.ts
+Keine „utils“-Sammelordner ohne klaren Zweck.
+
+TypeScript (Backend & Web)
+Benennung
+
+Variablen & Funktionen: camelCase
+
+Klassen, Typen, Interfaces: PascalCase
+
+Dateinamen: kebab-case.ts
+
+Beispiel:
+const activeOrganizationId: string;
+
+function assignMicroTaskToUser() {}
+
+type MicroTaskStatus = "OPEN" | "ASSIGNED" | "DONE";
+
+Nicht erlaubt:
+const ActiveOrgID;
+function do_it();
+
+Typisierung & Validation
+
+Kein any
+
+API-Grenzen immer typisieren
+
+Zod ist die Source of Truth für eingehende Daten
+
+✅ Beispiel (Zod):
+
+export const createTaskSchema = z.object({
+  title: z.string().min(3),
+  description: z.string().optional(),
+});
+
+
+❌ Schlecht:
+
+function createTask(data: any) {}
+
+Backend-Architektur
+Controller
+
+Aufgaben:
+
+Request entgegennehmen
+
+Input validieren
+
+Service aufrufen
+
+Response zurückgeben
+
+✅ Beispiel:
+
+export async function createTaskController(req, res) {
+  const input = createTaskSchema.parse(req.body);
+  const task = await taskService.createTask(input, req.user);
+  res.json(task);
+}
+
+
+❌ Schlecht (Business-Logik im Controller):
+
+if (user.role === "ADMIN") {
+  prisma.task.create(...)
+}
+
+Service
+
+Aufgaben:
+
+Enthält Business-Logik
+
+Kennt Rollen, Regeln und Abläufe
+
+Greift auf die Datenbank zu
+
+✅ Beispiel:
+
+export async function createTask(input, user) {
+  assertCanCreateTask(user);
+
+  return prisma.task.create({
+    data: {
+      ...input,
+      organizationId: user.activeOrganizationId,
+    },
+  });
+}
+
+Fehlerbehandlung
+
+Keine String-Throws
+
+Einheitliche Error-Typen
+
+✅ Beispiel:
+
+throw new ForbiddenError("User is not allowed to create tasks");
+
+
+❌ Schlecht:
+
+throw "not allowed";
+
+Flutter / Dart (Mobile App)
+Dateinamen & Klassen
+
+Dateien: snake_case.dart
+
+Klassen & Widgets: PascalCase
+
+✅ Beispiel:
+
+microtask_list_screen.dart
+
+class MicroTaskListScreen extends StatelessWidget {}
+
+Keine Logik in Widgets
+
+Widgets sind UI only.
+
+❌ Schlecht:
+
+onPressed: () {
+  api.assignTask(id);
+  state = "done";
+}
+
+
+✅ Gut:
+
+onPressed: () {
+  ref.read(microTaskControllerProvider).assign(id);
+}
+
+State Management
+
+Riverpod (oder äquivalent)
+
+State & Logik in Controllern/Notifiers
+
+UI konsumiert nur State
+
+✅ Beispiel:
+
+final microTaskControllerProvider =
+  StateNotifierProvider<MicroTaskController, AsyncValue<List<MicroTask>>>(
+    (ref) => MicroTaskController(ref),
+  );
+
+Tests
+Backend
+
+Business-Logik wird getestet
+
+Keine Tests für triviale Getter/Setter
+
+✅ Beispiel:
+
+it("assigns microtask to user", async () => {
+  const task = await assignMicroTask(user, microTask);
+  expect(task.status).toBe("ASSIGNED");
+});
+
+Web & Mobile
+
+Smoke-Tests ausreichend für Beta
+
+Fokus auf kritische Flows
+
+KI-spezifische Regeln (verbindlich)
+KI darf:
+
+Features gemäß Ticket implementieren
+
+Code refactoren im bestehenden Stil
+
+Tests ergänzen oder verbessern
+
+KI darf NICHT:
+
+Architekturentscheidungen ändern
+
+neue Frameworks oder State-Patterns einführen
+
+bestehende Konventionen ignorieren
+
+Business-Logik in Clients verschieben
+
+KI muss folgende Dokumente respektieren:
+
+PROJECT.md
+
+ARCHITECTURE.md
+
+DOMAIN.md
+
+DECISIONS.md
+
+STYLEGUIDE.md
+
+Code Reviews
+
+Konsistenz schlägt persönlichen Geschmack
+
+Abweichungen müssen begründet sein
+
+Existiert ein Beispiel, ist diesem zu folgen
+
+Geltungsbereich
+
+Dieser Styleguide gilt für:
+
+Backend
+
+Web App
+
+Mobile App
+
+Er ist verbindlich für:
+
+menschliche Entwickler
+
+KI-Tools (Codex, Copilot, etc.)
+
+
+---
+
+Wenn du möchtest, kann ich als Nächstes:
+- den **Text sprachlich minimal glätten**, ohne Inhalt zu ändern  
+- oder ihn **auf Deutsch/Englisch vereinheitlichen**  
+- oder ein **Ticket-Template**, das explizit auf diesen Styleguide verweist
+
+Sag einfach, wie es weitergehen soll 👍
+
