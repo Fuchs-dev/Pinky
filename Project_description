@@ -1,0 +1,92 @@
+# Pinky – Projektbeschreibung
+
+## Kurzbeschreibung
+Pinky ist eine digitale Plattform für Vereine und ehrenamtlich organisierte Gruppen.  
+Ziel ist es, Engagement einfacher und zugänglicher zu machen, indem große Aufgaben in kleine, klar abgegrenzte Micro-Tasks zerlegt werden. Diese Micro-Tasks können flexibel von Mitgliedern übernommen werden und erfordern nur wenig Zeit.
+
+---
+
+## Problem
+Viele Vereine stehen vor ähnlichen Herausforderungen:
+- Zu wenige Engagierte übernehmen zu viele Aufgaben
+- Aufgaben und Ämter wirken groß, unübersichtlich und abschreckend
+- Engagement ist oft schlecht sichtbar und wenig planbar
+- Die Organisation läuft über Chats, Listen oder Einzelpersonen
+
+Das führt zu Überlastung, Frust und sinkender Beteiligung.
+
+---
+
+## Lösung
+Pinky bricht große Aufgaben systematisch in Micro-Tasks herunter und verteilt sie transparent innerhalb einer Organisation.
+
+Kernidee:
+- Weniger Verpflichtung pro Aufgabe
+- Mehr Flexibilität für Mitglieder
+- Bessere Übersicht für Organisatoren
+
+Die Plattform unterstützt dabei:
+- Aufgaben zu planen
+- Micro-Tasks zu erstellen oder automatisch vorzuschlagen
+- Aufgaben passend an Mitglieder zu verteilen
+- Fortschritt und Engagement sichtbar zu machen
+
+---
+
+## Zielgruppen
+
+### Aufgabensteller / Organisatoren
+- Vorstände
+- Projektverantwortliche
+- Trainer, Gruppenleiter, Koordinatoren
+
+Sie nutzen eine Webanwendung, um:
+- Aufgaben und Projekte anzulegen
+- Micro-Tasks zu verwalten
+- Mitglieder und Rollen zu organisieren
+- Fortschritt zu überblicken
+
+---
+
+### Mitglieder / Ehrenamtliche
+- Vereinsmitglieder
+- Helferinnen und Helfer
+
+Sie nutzen eine mobile App, um:
+- verfügbare Micro-Tasks zu entdecken
+- Aufgaben flexibel zu übernehmen
+- ihren eigenen Beitrag zu sehen
+- Benachrichtigungen zu erhalten
+
+---
+
+## Grundprinzipien
+- Micro-Tasks sind klein, klar und zeitlich begrenzt
+- Engagement soll freiwillig, flexibel und niedrigschwellig sein
+- Alle Aufgaben gehören immer zu einer Organisation
+- Rollen und Berechtigungen sind klar geregelt
+- Die Plattform unterstützt Organisation, ersetzt aber keine Vereinsentscheidungen
+
+---
+
+## Abgrenzung (für die erste Version)
+Nicht Teil der ersten Version:
+- Monetarisierung
+- Öffentliche soziale Netzwerke
+- Komplexe Gamification
+- Echtzeit-Kommunikation (Chat)
+
+Fokus liegt auf:
+- Kernfunktionalität
+- Verständlicher Struktur
+- Stabiler Basis für spätere Erweiterungen
+
+---
+
+## Ziel der Beta
+Die Beta-Version soll zeigen, dass:
+- Aufgaben sinnvoll in Micro-Tasks zerlegt werden können
+- Mitglieder diese Aufgaben tatsächlich annehmen
+- Organisatoren einen spürbaren organisatorischen Mehrwert haben
+
+Die Beta ist funktional, nicht perfekt, und dient der Validierung des Konzepts.
