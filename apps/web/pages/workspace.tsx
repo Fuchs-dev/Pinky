@@ -96,6 +96,14 @@ const WorkspacePage: NextPage = () => {
         </button>
         {pingResult ? <p>{pingResult}</p> : null}
       </section>
+      <section style={{ marginTop: "1.5rem" }}>
+        <button
+          onClick={() => router.push("/microtasks")}
+          disabled={!activeOrgId}
+        >
+          Open MicroTask Feed
+        </button>
+      </section>
     </main>
   );
 };

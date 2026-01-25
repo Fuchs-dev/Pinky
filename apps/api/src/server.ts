@@ -3,11 +3,15 @@ import { z } from "zod";
 import { createAccessToken, verifyAccessToken } from "./auth";
 import {
   createUser,
+  ensureSeedMicroTasksForUser,
   findMembership,
   getOrganizationById,
+  getTaskById,
   getUserByEmail,
   getUserById,
+  getMicroTaskById,
   listMembershipsForUser,
+  listMicroTasksForOrganization,
   seedUserMemberships
 } from "./store";
 
@@ -17,6 +21,8 @@ const loginBodySchema = z.object({
 });
 
 const orgHeaderSchema = z.string().uuid();
+const microTaskStatusSchema = z.enum(["OPEN", "ASSIGNED", "DONE"]);
+const microTaskIdSchema = z.string().uuid();
 
 const jsonResponse = (
   response: ServerResponse,
@@ -122,6 +128,7 @@ const handleLogin = async (request: IncomingMessage, response: ServerResponse) =
     user = createUser(email, displayName);
   }
   seedUserMemberships(user);
+  ensureSeedMicroTasksForUser(user.id);
   const accessToken = createAccessToken(user.id);
   return jsonResponse(response, 200, { accessToken });
 };
@@ -149,6 +156,61 @@ const handleMemberships = (response: ServerResponse, userId: string) => {
     };
   });
   return jsonResponse(response, 200, memberships);
+};
+
+const handleMicroTaskList = (
+  response: ServerResponse,
+  orgId: string,
+  searchParams: URLSearchParams
+) => {
+  const statusParam = searchParams.get("status");
+  const parsedStatus = statusParam
+    ? microTaskStatusSchema.safeParse(statusParam)
+    : { success: true, data: "OPEN" as const };
+  if (!parsedStatus.success) {
+    return errorResponse(response, 400, "Invalid status", "INVALID_STATUS");
+  }
+
+  const microTasks = listMicroTasksForOrganization(
+    orgId,
+    parsedStatus.data
+  ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const payload = microTasks.map((microTask) => {
+    const task = getTaskById(microTask.taskId);
+    return {
+      id: microTask.id,
+      title: microTask.title,
+      status: microTask.status,
+      task: task ? { id: task.id, title: task.title } : null,
+      dueAt: microTask.dueAt ?? null
+    };
+  });
+  return jsonResponse(response, 200, payload);
+};
+
+const handleMicroTaskDetail = (
+  response: ServerResponse,
+  orgId: string,
+  microTaskId: string
+) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) {
+    return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+  }
+  const microTask = getMicroTaskById(parsedId.data);
+  if (!microTask || microTask.organizationId !== orgId) {
+    return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+  }
+  const task = getTaskById(microTask.taskId);
+  return jsonResponse(response, 200, {
+    id: microTask.id,
+    title: microTask.title,
+    description: microTask.description ?? null,
+    status: microTask.status,
+    task: task ? { id: task.id, title: task.title } : null,
+    dueAt: microTask.dueAt ?? null,
+    createdAt: microTask.createdAt
+  });
 };
 
 const handleOrgPing = (
@@ -215,6 +277,19 @@ export const createApiServer = () =>
             orgContext.orgId,
             orgContext.role
           );
+        }
+
+        if (method === "GET" && pathname === "/microtasks") {
+          return handleMicroTaskList(
+            response,
+            orgContext.orgId,
+            url.searchParams
+          );
+        }
+
+        if (method === "GET" && pathname.startsWith("/microtasks/")) {
+          const microTaskId = pathname.replace("/microtasks/", "");
+          return handleMicroTaskDetail(response, orgContext.orgId, microTaskId);
         }
       }
 
