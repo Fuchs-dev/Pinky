@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "seed": "npm run build && node dist/seed.js",
     "start": "node dist/index.js",
     "test": "npm run build && node --test dist/tests/*.test.js"
   },
