@@ -1,0 +1,220 @@
+# Pinky – Domainmodell (DOMAIN.md)
+
+## Zweck dieses Dokuments
+Dieses Dokument beschreibt die fachlichen Begriffe, Regeln und Zusammenhänge der Pinky-Domäne.  
+Es ist die gemeinsame fachliche Grundlage für Backend, Web App, Mobile App und KI-gestützte Entwicklung.
+
+Technische Details (Frameworks, Libraries) sind **nicht** Teil dieses Dokuments.
+
+---
+
+## Zentrale Begriffe (Entities)
+
+### User
+Ein User ist eine reale Person, die Pinky nutzt.
+
+Eigenschaften:
+- eindeutige ID
+- Name / Anzeige-Name
+- Kontaktinformationen (z. B. E-Mail)
+- kann Mitglied in mehreren Organisationen sein
+
+Ein User hat **keine globale Rolle**, sondern Rollen **pro Organisation**.
+
+---
+
+### Organization
+Eine Organization repräsentiert einen Verein oder eine ehrenamtliche Organisation.
+
+Eigenschaften:
+- eindeutige ID
+- Name
+- Beschreibung
+- optionale Metadaten (z. B. Typ, Ort)
+
+Regeln:
+- Alle Aufgaben gehören immer genau zu **einer** Organisation
+- Nutzer interagieren immer im Kontext einer Organisation
+
+---
+
+### Membership
+Eine Membership verbindet einen User mit einer Organization.
+
+Eigenschaften:
+- User
+- Organization
+- Rolle
+- Status (aktiv / inaktiv)
+
+Regeln:
+- Ein User kann mehrere Memberships haben
+- Berechtigungen ergeben sich ausschließlich aus der Membership
+
+---
+
+## Rollen (pro Organisation)
+
+### ADMIN
+- vollständiger Zugriff auf die Organisation
+- kann Rollen vergeben
+- kann alle Aufgaben und Micro-Tasks verwalten
+
+### ORGANIZER
+- kann Aufgaben und Projekte anlegen
+- kann Micro-Tasks erstellen und zuteilen
+- sieht Fortschritt und Übersichten
+
+### MEMBER
+- kann verfügbare Micro-Tasks sehen
+- kann Micro-Tasks übernehmen und abschließen
+- hat keinen Zugriff auf Verwaltungsfunktionen
+
+---
+
+## Aufgabenmodell
+
+### Task (Aufgabe)
+Eine Task ist eine größere, organisatorische Aufgabe oder ein Projekt.
+
+Beispiele:
+- „Sommerfest organisieren“
+- „Turnier vorbereiten“
+- „Website aktualisieren“
+
+Eigenschaften:
+- gehört zu genau einer Organization
+- wird von Organisatoren erstellt
+- besteht aus mehreren Micro-Tasks
+
+Eine Task ist **nicht direkt ausführbar**, sondern dient der Strukturierung.
+
+---
+
+### MicroTask
+Ein MicroTask ist eine kleine, klar abgegrenzte, ausführbare Aufgabe.
+
+Beispiele:
+- „Getränke einkaufen“
+- „Plakate aufhängen“
+- „Trainer informieren“
+
+Eigenschaften:
+- gehört zu genau einer Task
+- gehört zu genau einer Organization
+- ist zeitlich und inhaltlich begrenzt
+- kann von genau einem User übernommen werden
+
+---
+
+## Statusmodelle
+
+### MicroTask Status
+Ein MicroTask kann folgende Status haben:
+
+- `OPEN`  
+  MicroTask ist verfügbar und kann übernommen werden
+
+- `ASSIGNED`  
+  MicroTask wurde von einem User übernommen
+
+- `DONE`  
+  MicroTask wurde abgeschlossen
+
+- `BLOCKED` (optional, später)  
+  MicroTask kann aktuell nicht bearbeitet werden
+
+Statusregeln:
+- `OPEN → ASSIGNED → DONE`
+- Rücksprünge sind nur mit Berechtigung erlaubt (z. B. Organizer)
+
+---
+
+### Task Status (abgeleitet)
+Der Status einer Task ergibt sich aus ihren Micro-Tasks.
+
+Beispiele:
+- Task ist **offen**, wenn mindestens ein MicroTask `OPEN` oder `ASSIGNED` ist
+- Task ist **abgeschlossen**, wenn alle MicroTasks `DONE` sind
+
+Der Task-Status wird **nicht manuell gesetzt**, sondern berechnet.
+
+---
+
+## Zuteilung & Verantwortung
+
+### Assignment
+Die Übernahme eines MicroTasks durch einen User.
+
+Regeln:
+- Ein MicroTask kann nur von **einem** User gleichzeitig übernommen werden
+- Der übernehmende User muss Mitglied der Organisation sein
+- Organizer können MicroTasks auch aktiv zuweisen
+
+---
+
+## Sichtbarkeit & Zugriff
+
+Grundregel:
+> Ein User sieht und bearbeitet nur Daten der Organisationen, in denen er Mitglied ist.
+
+Weitere Regeln:
+- MEMBER sieht nur MicroTasks, keine vollständigen Tasks (optional konfigurierbar)
+- ORGANIZER und ADMIN sehen Tasks und MicroTasks
+- ADMIN sieht zusätzlich Mitglieder- und Rolleninformationen
+
+---
+
+## Aktivitäts- & Änderungsverlauf
+
+### Activity Log
+Wichtige Aktionen werden protokolliert, z. B.:
+- Task erstellt
+- MicroTask übernommen
+- MicroTask abgeschlossen
+- Rollenänderungen
+
+Zweck:
+- Nachvollziehbarkeit
+- Transparenz
+- spätere Auswertung
+
+---
+
+## KI-Unterstützung (fachlich)
+KI kann unterstützend eingesetzt werden für:
+- Vorschläge zur Aufteilung von Tasks in Micro-Tasks
+- Priorisierung oder Sortierung von Aufgaben
+
+Wichtig:
+- KI trifft **keine finalen Entscheidungen**
+- Organisatoren behalten immer die Kontrolle
+
+---
+
+## Fachliche Grundprinzipien (Zusammenfassung)
+- Alle Aktionen passieren im Kontext einer Organisation
+- Rollen gelten immer nur organisationsbezogen
+- Micro-Tasks sind das zentrale Ausführungselement
+- Aufgaben werden strukturiert, nicht „abarbeitet“
+- Transparenz und niedrige Einstiegshürden stehen im Vordergrund
+
+## Multi-Organisation (Workspace-Modell)
+
+Ein User kann Mitglied in mehreren Organisationen sein (Memberships).  
+Die Nutzung der App passiert immer im Kontext genau einer **aktiven Organisation** (ähnlich wie Workspaces bei Slack).
+
+### Active Organization
+- Der User hat eine `activeOrganizationId`
+- Diese wird beim Login initial gesetzt (z. B. zuletzt genutzt oder erste Membership)
+- Der User kann jederzeit die aktive Organisation wechseln
+
+### Regel
+Alle Datenzugriffe (Tasks, MicroTasks, Mitglieder, etc.) sind immer auf die aktive Organisation begrenzt.  
+Ein Wechsel der Organisation bedeutet, dass alle Listen/Übersichten im Client neu geladen werden.
+
+### Zugriffskontrolle
+Beim Wechsel oder bei API-Requests muss das Backend immer prüfen:
+- User ist authentifiziert
+- User hat eine Membership in der gewählten Organisation
+- Rolle bestimmt die erlaubten Aktionen
