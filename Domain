@@ -128,6 +128,36 @@ Statusregeln:
 - `OPEN → ASSIGNED → DONE`
 - Rücksprünge sind nur mit Berechtigung erlaubt (z. B. Organizer)
 
+Hinweis:
+- Die Warteschlange ist **kein eigener Ausführungsstatus** des MicroTasks.
+- Wartelisten werden über ein eigenes Queue-Modell abgebildet (siehe unten), damit der Lebenszyklus des MicroTasks klar bleibt.
+
+---
+
+### Queue Status (Warteschlange)
+Für Interessenten an bereits belegten oder temporär nicht verfügbaren MicroTasks gibt es eine Warteschlange pro MicroTask.
+
+Ein Queue-Eintrag (`QueueEntry`) kann folgende Status haben:
+
+- `QUEUED`  
+  Mitglied steht aktiv in der Warteschlange
+
+- `NOTIFIED`  
+  Mitglied wurde informiert, dass der MicroTask wieder verfügbar ist
+
+- `EXPIRED`  
+  Reaktionszeit nach Benachrichtigung ist abgelaufen
+
+- `WITHDRAWN`  
+  Mitglied hat die Warteschlange verlassen oder wurde entfernt
+
+Regeln:
+- Pro User und MicroTask ist maximal **ein aktiver** Queue-Eintrag erlaubt
+- Nur Mitglieder derselben Organisation dürfen in die Warteschlange
+- Wird ein MicroTask wieder `OPEN`, wird das nächste wartende Mitglied benachrichtigt (Push)
+- Nimmt das benachrichtigte Mitglied den MicroTask an, entsteht eine normale Assignment (`ASSIGNED`)
+- Reagiert das Mitglied nicht rechtzeitig, wechselt der Queue-Eintrag auf `EXPIRED` und die nächste Person wird benachrichtigt
+
 ---
 
 ### Task Status (abgeleitet)
@@ -138,6 +168,9 @@ Beispiele:
 - Task ist **abgeschlossen**, wenn alle MicroTasks `DONE` sind
 
 Der Task-Status wird **nicht manuell gesetzt**, sondern berechnet.
+
+Wichtig:
+- Queue-Status (`QUEUED`, `NOTIFIED`, `EXPIRED`, `WITHDRAWN`) ändern den Task-Status nicht direkt.
 
 ---
 
@@ -150,6 +183,14 @@ Regeln:
 - Ein MicroTask kann nur von **einem** User gleichzeitig übernommen werden
 - Der übernehmende User muss Mitglied der Organisation sein
 - Organizer können MicroTasks auch aktiv zuweisen
+
+### Waitlist / Queue
+Die Warteschlange ist ein geordneter Interessenten-Puffer für einen MicroTask.
+
+Regeln:
+- Warteschlangenreihenfolge ist nachvollziehbar (FIFO, sofern nicht organisatorisch überschrieben)
+- Bei Freiwerden eines MicroTasks wird die nächste Person per Push benachrichtigt
+- Organisatoren können Queue-Einträge einsehen und bei Bedarf moderieren
 
 ---
 

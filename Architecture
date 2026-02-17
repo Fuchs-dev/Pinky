@@ -63,7 +63,7 @@ Wichtig: **Alle Regeln liegen im Backend.** Web und Mobile sind Clients und soll
 - Datenmodelle und Konsistenz
 - Micro-Task-Logik (Erstellen, Splitten, Zuweisen, Status)
 - Audit/Activity-Log (wer hat was getan?)
-- Hintergrundjobs (Benachrichtigungen, Vorschläge, automatische Zuteilung)
+- Hintergrundjobs (Benachrichtigungen, Vorschläge, automatische Zuteilung, Queue-Benachrichtigungen)
 
 ### Web App ist verantwortlich für:
 - UI für Organisatoren
@@ -76,6 +76,7 @@ Wichtig: **Alle Regeln liegen im Backend.** Web und Mobile sind Clients und soll
 - Micro-Task Feed + Details
 - Übernehmen/Abschließen/Blockieren
 - eigene Übersicht (Meine Tasks)
+- Warteschlangen-Beitritt für MicroTasks (Queue-Intent)
 - Push-Handling und Deep Links
 
 ---
