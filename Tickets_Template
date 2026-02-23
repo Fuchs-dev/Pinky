@@ -1,0 +1,59 @@
+# Ticket <NUMMER> – <KURZER TITEL>
+
+## Kontext
+Kurze Beschreibung des Problems oder Features.  
+Warum wird das gebraucht? Für wen?
+
+---
+
+## Ziel
+Was soll nach Abschluss dieses Tickets möglich sein?
+
+---
+
+## Scope
+**In Scope:**
+- …
+
+**Out of Scope:**
+- …
+
+---
+
+## Fachliche Regeln
+- Relevante Punkte aus `DOMAIN.md`
+- Sonderregeln oder Ausnahmen
+
+---
+
+## Technische Hinweise
+- Relevante Punkte aus `ARCHITECTURE.md`
+- Relevante Entscheidungen aus `DECISIONS.md`
+- Relevante Konventionen aus `STYLEGUIDE.md`
+
+---
+
+## Umsetzung
+- Backend:
+  - …
+- Web:
+  - …
+- Mobile:
+  - …
+
+---
+
+## Definition of Done
+- [ ] Feature fachlich korrekt umgesetzt
+- [ ] Architektur eingehalten
+- [ ] Styleguide eingehalten
+- [ ] Tests (falls sinnvoll) vorhanden
+- [ ] Keine Secrets im Code
+- [ ] Build & Tests laufen durch
+
+---
+
+## Hinweise für KI
+- Bestehende Struktur nutzen
+- Keine neuen Frameworks einführen
+- Keine Architekturentscheidungen ändern
