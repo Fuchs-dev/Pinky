@@ -1,218 +1,160 @@
 # Pinky – Architektur
 
-> Stand: 2026-02-23  
-> Fokus: Skalierbare, wartbare und DSGVO-taugliche Plattform für Vereine und ehrenamtliche Organisationen.
+> **Stand:** 2026-02-23  
+> **Fokus:** Skalierbare, wartbare und DSGVO-taugliche Plattform für Vereine und ehrenamtliche Organisationen.
 
 ---
 
-## 1. Zielbild
+## 1. Überblick & Zielbild
 
-Pinky besteht aus zwei primären Clients und einer zentralen Daten- und Logikplattform:
+Pinky besteht aus drei Hauptkomponenten (Clients vs. zentrale Plattform):
 
-1. **Mobile App (Flutter)** für Mitglieder
-2. **Admin Web (Next.js + TypeScript)** für Organisatoren
-3. **Supabase-basierte Backend-Plattform** für Daten, Auth, Storage und Serverlogik
+1. **Mobile App (Flutter)** für Mitglieder (Micro-Tasks finden, übernehmen, Status ändern, Queue-Intent).
+2. **Admin Web (Next.js)** für Organisatoren (Projekte planen, Micro-Tasks erstellen/zuteilen, Mitgliederverwaltung, Übersicht).
+3. **Zentrale Backend-Plattform** für Datenhaltung, Authentication, Serverlogik und Hintergrundjobs (Zuteilungslogik, KI-Splitting, Benachrichtigungen).
 
-Leitprinzip: **Clients sind dünn, Policies und Kernlogik liegen zentral und serverseitig.**
+**Leitprinzip:** Clients (Mobile & Web) sind dünn, alle Policies (Sicherheit, DSGVO) und Kern-Business-Logik liegen **zentral serverseitig**. Web und Mobile erfinden keine eigene Business-Logik.
 
 ---
 
-## 2. Tech-Stack (empfohlen)
+## 2. Tech-Stack (Empfohlen)
 
-### 2.1 Frontend
-
-- **Mobile App:** Flutter (Dart)
-- **Admin Web:** Next.js (React) + TypeScript
-
-### 2.2 UI
-
-- **Flutter:** Material 3 + eigene Design-Tokens via Theme Extensions
-- **Web:** Tailwind + shadcn/ui  
-  _Alternative:_ MUI, wenn ein schneller Enterprise-UI-Start gewünscht ist
-
-### 2.3 Backend / Datenschicht
-
-- **Datenbank:** PostgreSQL (managed)
+### 2.1 Backend-Plattform & Datenschicht
+*Der Stack setzt auf Supabase als Accelerator, kombiniert mit eigenen Backend-Layern für komplexe Logik (Edge Functions/Node.js).*
+- **Datenbank:** PostgreSQL (managed, relational)
 - **Plattform:** Supabase (Postgres + Auth + Storage + RLS)
-- **Serverlogik:** Supabase Edge Functions (TypeScript), insbesondere für:
-  - Task-Matching
-  - Benachrichtigungen
-  - CSV-Exporte
-  - Webhooks
+- **Serverlogik:** Node.js + TypeScript (als dediziertes Backend) oder Supabase Edge Functions. Letzteres ist bevorzugt für Webhooks und Exporte.
+- **Validierung:** Zod (strenge Input-Validierung)
+- **DB Layer/ORM:** Prisma (falls Node.js-Backend gewählt wird) ansonsten direkte Supabase Clients.
 
-### 2.4 Auth / Security
+### 2.2 Mobile App (Mitglieder)
+- **Framework:** Flutter (Dart)
+- **Architektur:** Feature-first Struktur
+- **State Management:** Riverpod (oder ähnlich)
+- **Routing:** `go_router`
+- **Networking:** HTTP Client (z. B. `dio`)
+- **UI:** Material 3 mit eigenen Design-Tokens via Theme Extensions
+- **Security:** Tokens via Secure Storage speichern
 
-- **Auth:** Supabase Auth (Email + Magic Link; später Passkeys/OAuth)
-- **Mandantentrennung:** RLS + `org_id`/`tenant_id` in allen relevanten Tabellen
-- **Secrets:** Environment Variables + Supabase Secrets
+### 2.3 Admin Web (Organisatoren)
+- **Framework:** Next.js (React) + TypeScript
+- **UI-Styling:** Tailwind CSS + shadcn/ui (*Alternative: MUI für schnellen Enterprise-Start*)
+- **API Calls:** `fetch` / `axios` (einheitlich halten)
+- **Security:** Keine Business-Logik, dient nur als UI + Validierung für UX
 
-### 2.5 Notifications / Messaging
-
-- **Push:** Firebase Cloud Messaging (FCM)
-- **Transaktionale E-Mails:** Postmark oder SendGrid (optional für später)
-
-### 2.6 Observability / Ops
-
+### 2.4 Notifications, Ops & Hintergrundjobs
+- **Push-Nachrichten:** Firebase Cloud Messaging (FCM)
+- **Transaktions-E-Mails:** Postmark oder SendGrid
 - **Error Tracking:** Sentry (Web + Flutter + Edge Functions)
-- **Analytics (privacy-friendly):** Plausible (optional)
-- **CI/CD:** GitHub Actions
-- **Hosting (Web):** Vercel (oder Cloudflare Pages)
-- **DB Schema Changes:** Supabase SQL Migrations
-
-### 2.7 Files / Media
-
-- **Storage:** Supabase Storage (z. B. Anhänge, Vereinsbilder)
-- **CDN:** Über Supabase/Vercel automatisch
-
-### 2.8 Später bei Wachstum (optional)
-
-- Background Jobs / Queues (Scheduled/Trigger Functions oder Worker)
-- Search: Postgres FTS, später Meilisearch/Typesense
-- Rate Limiting: Cloudflare/Vercel + API Gateway Regeln
+- **CI/CD:** GitHub Actions (Lint, Typecheck, Tests, Build, Deployment, Migrations)
+- **Worker/Jobs:** Node-Prozess / Job-Queue für Task-Matching, Notifications, KI-Splitting.
 
 ---
 
 ## 3. Systemkontext & Datenfluss
 
 ```text
-[Mobile App (Flutter)]
-         |
-         | HTTPS (Supabase Auth Token)
-         v
-[Supabase: Postgres + RLS + Auth + Storage]
-         ^
-         |
-[Admin Web (Next.js)]
-
-Edge Functions (TypeScript) greifen kontrolliert auf Postgres/Storage zu
-für Matching, Notifications, Exporte und Webhook-Verarbeitung.
-
-Push-Nachrichten laufen über FCM.
+       [Mobile App (Flutter)]
+                 |
+                 | HTTPS / Supabase Auth Token
+                 v
+[Zentrales Backend: API / Supabase + Postgres] -> [Storage] (Anhänge)
+                 ^                           \
+                 |                            -> [Worker / Edge Functions]
+       [Admin Web (Next.js)]                       Dienste: Matching, Notifications (FCM/Mail), CSV-Exporte
 ```
 
-Wichtig:
-- Jeder Datenzugriff muss tenant-konform sein.
-- RLS schützt auf Datenbankebene.
-- Edge Functions erzwingen zusätzliche Domänenregeln.
+**Zentrale Workflow-Schritte:**
+- Zustand und Zugriff werden komplett im Backend geprüft (via RLS oder serverseitigen Prüfungen).
+- Push-Nachrichten werden über FCM orchestriert.
+- KI-Splitting läuft isoliert in Background-Jobs oder separaten Staging-Umgebungen und wird vor Datenpersistenz durch Organisatoren bestätigt.
 
 ---
 
-## 4. Domänen- und Mandantenmodell
+## 4. Verantwortlichkeiten (Klar abgegrenzt)
 
-### 4.1 Kernentitäten (konzeptionell)
+### 4.1 Backend (Supabase + Node.js/Edge Functions)
+Ist die **einzige Quelle der Wahrheit**. Verantwortlich für:
+- Authentifizierung (Login, Session-Handling, Sign-up).
+- Rollen & Berechtigungen (RBAC, Mandantentrennung).
+- Datenmodelle und Konsistenzsicherung.
+- Micro-Task-Kernlogik (Erstellen, Splitten, Zuweisen, Zustandsmaschine).
+- Audit / Activity-Log (Wer hat was, wann modifiziert?).
+- Orchestrierung von Hintergrundjobs (Queue-Benachrichtigungen, Vorschläge, autom. Zuteilungen).
 
-- `organizations` (Mandanten)
-- `memberships` (User ↔ Organization + Rolle)
-- `tasks`
-- `micro_tasks`
-- `assignments`
-- `notifications`
-- `attachments`
+### 4.2 Admin Web (Next.js)
+Ist das **Steuerungswerkzeug der Organisatoren**. Verantwortlich für:
+- UI für die Vereins-Organisatoren.
+- Anlagen von Aufgaben/Projekten und Micro-Tasks.
+- KI-Splitting von großen Aufgaben anstoßen (und Vorschläge sichten).
+- Mitglieder- und Rollenverwaltung.
+- Dashboard, Fortschrittsüberwachung, Reports und CSV-Exporte anstoßen.
 
-### 4.2 Mandantenregeln
-
-- Jede mandantenrelevante Tabelle trägt `org_id`
-- Zugriff nur, wenn Membership zur `org_id` existiert
-- `org_id` wird aus Auth-Kontext abgeleitet (nicht aus blindem Client-Input)
-- Cross-tenant Zugriff ist standardmäßig verboten
+### 4.3 Mobile App (Flutter)
+Ist das **Werkzeug der Ehrenamtlichen/Beteiligten**. Verantwortlich für:
+- Micro-Task Feed anzeigen und Filtern nach Relevanz.
+- Details einsehen.
+- Aufgabenzyklus bedienen (Übernehmen, Abschließen, Blockieren).
+- Warteschlangen-Beitritt (Queue-Intent bekunden) für MicroTasks.
+- Reines Handling von Push-Notifications und Deep Links.
+- Eigene Übersicht („Meine Tasks“).
 
 ---
 
-## 5. Verantwortlichkeiten
+## 5. Domänen- und Mandantenmodell
 
-### 5.1 Mobile App (Flutter)
+### 5.1 Kernentitäten
+- `organizations`: Die jeweiligen Vereine / Mandanten.
+- `memberships`: Verknüpfung von `users` mit `organizations` inklusive relevanter Rolle.
+- `tasks`: Übergeordnete Aufgaben ("Event organisieren").
+- `micro_tasks`: Kleine, heruntergebrochene Schritte ("Getränke abholen").
+- `assignments`: Verknüpfungen von Micro-Tasks zu Mitgliedern.
+- `notifications` & `attachments`.
 
-- Task-Feed, Task-Details, Übernahme/Abschluss
-- Anzeige persönlicher Aufgaben
-- Push-Handling
-- Keine Durchsetzung von Sicherheitsregeln (nur UX-Validierung)
-
-### 5.2 Admin Web (Next.js)
-
-- Aufgaben/Micro-Tasks anlegen und verwalten
-- Mitglieder- und Rollenverwaltung
-- Fortschritts- und Organisationsübersicht
-- CSV-Export anstoßen
-
-### 5.3 Supabase + Edge Functions
-
-- Authentifizierung und Session-Handling
-- Autorisierung via RLS + serverseitiger Logik
-- Matching-Logik
-- Benachrichtigungsversand-Orchestrierung
-- Webhook-Eingang und Verarbeitung
+### 5.2 Mandantenregeln (Strikt)
+- **Jede** mandantenrelevante Tabelle trägt eine `org_id` (oder `tenant_id`).
+- Zugriff ist **nur** dann erlaubt, wenn eine gültige `membership` zur ermittelten `org_id` existiert.
+- Die `org_id` wird zwingend aus dem serverseitig geprüften Auth-Kontext (Token/Session) abgeleitet – **niemals aus blindem Client-Input**.
+- **Cross-tenant Zugriff ist als Standard streng untersagt.**
 
 ---
 
 ## 6. Security & Privacy by Design
 
-- RLS ist Pflicht für alle produktiven Tabellen
-- Least-Privilege für Service-Keys und Tokens
-- Secrets ausschließlich über Secret Stores
-- Keine PII in Logs oder Fehlermeldungen
-- Datenminimierung und Zweckbindung
-- Lösch-/Exportfähigkeit personenbezogener Daten berücksichtigen
+- **Daten gehören zur Organisation:** Alle nutzergenerierten Inhalte sind streng einer Organisation zugeordnet.
+- **Row-Level-Security (RLS):** Ist Pflicht für alle produktiven Tabellen in Supabase/PostgreSQL.
+- **Prinzip der geringsten Privilegien:** Service-Keys und Tokens erhalten nur jene Befugnisse, die absolut notwendig sind.
+- **Keine Secrets ins Repo:** Alle Umgebungs-Keys wandern in sichere Secret Stores (`.env` lokal, bzw. Production/Platform Environments).
+- **Keine PII in Logs:** Logs oder Error-Tracker dürfen niemals Personally Identifiable Information (E-Mail, Klarnamen etc.) leaken.
+- **DSGVO:** Datenminimierung und Zweckbindung ab Tag 1. Lösch- und Exportfähigkeit ("CSV-Export") von Accounts ist Kernfunktionalität.
 
 ---
 
-## 7. Deployment- und Umgebungsmodell
+## 7. Umgebungen & Deployment
 
-Empfohlene Umgebungen:
+Wir nutzen ein Monorepo, damit Backend, Web, Mobile und Dokumentation (inkl. Architektur, Styleguides) konsistent bleiben.
 
-- **local/dev** – lokale Entwicklung
-- **staging** – Integrations- und Abnahmetests
-- **production** – produktiver Betrieb
+**Empfohlene Umgebungen:**
+- **local/dev**: Lokale Entwicklung für die Devs.
+- **staging**: Testumgebung für Integrations-/Abnahmetests mit synthetischen Testdaten. (In dieser Umgebung darf die KI testweise arbeiten).
+- **production**: Produktiver Echtbetrieb. Hier gelten höchste Schutzstandards. Strikte Trennung von Staging/Dev. (KI-gestützte Datenverarbeitung für Produktionsdaten muss transparent und bestätigt laufen).
 
-Regeln:
-- Strikte Trennung der Umgebungen
-- Migrations laufen geordnet pro Umgebung
-- Feature-Rollouts bevorzugt schrittweise
-
----
-
-## 8. CI/CD und Qualitätssicherung
-
-GitHub Actions Pipeline (Mindestumfang):
-
+**CI/CD Pipeline Mindestumfang:**
 1. Lint + Format Check
-2. Typecheck (Web + Functions)
-3. Tests (unit/integration)
+2. Typecheck (Web, App, Functions)
+3. Automatische Tests (Unit/Integration)
 4. Build
-5. Deployment (staging/prod)
-
-Zusätzlich:
-- Migration Checks für SQL
-- Optional: Policy-Tests (RLS-Sicherheitsnetz)
-- Release-Tags an Sentry melden
+5. Schema Migrations Check
+6. Deployment (ggf. automatisiert auf Staging, manuell auf Prod)
 
 ---
 
-## 9. Skalierungsstrategie (schrittweise)
+## 8. Skalierungsstrategie
 
-**Phase 1 (MVP/Beta)**
-- Supabase als zentrale Plattform
-- Edge Functions für Kernprozesse
-- Einfache Push-Pipeline über FCM
-
-**Phase 2 (Wachstum)**
-- Background Scheduling/Queueing ausbauen
-- Suchfunktion über Postgres FTS verbessern
-- Rate Limiting an Kanten und API aktivieren
-
-**Phase 3 (Reifebetrieb)**
-- Ausgereiftes Monitoring/Alerting
-- Kosten- und Performance-Optimierung je Tenant
-- Erweiterte Sicherheits- und Auditprozesse
+- **Phase 1 (MVP/Beta):** Supabase als schnelle Basis, Node.js Jobs/Edge Functions für Kernprozesse, einfacher Push (FCM), simple WebUI und Flutter-Features. `local` + `staging` Umgebungen primär im Fokus der Entwickler vor Beta-Rollout.
+- **Phase 2 (Wachstum):** Ausbau des Background-Queuings / Worker-Load-Balancing, robustere FTS (Postgres Fulltext Search), Rate Limiting an Gateway/API.
+- **Phase 3 (Reife):** Finetuning, dediziertes Monitoring (Grafana/Datadog optional neben Sentry), Mandanten-Performance-Kalkulation, fortgeschrittene Audit-Prozesse.
 
 ---
 
-## 10. Entscheidungsprinzipien (ADR-light)
-
-Technische Entscheidungen orientieren sich an:
-
-1. **Datenschutz & Mandantensicherheit zuerst**
-2. **Betriebliche Einfachheit vor unnötiger Komplexität**
-3. **Skalierbarkeit über klare Grenzen und modularen Ausbau**
-4. **Klare Ownership pro Domäne/Feature**
-
-Bei größeren Richtungsänderungen wird ein kurzer ADR-Eintrag im `/docs`-Bereich ergänzt.
+> **ADR (Entscheidungsprinzipien):** Datenschutz und Mandantensicherheit haben Vorrang vor allem anderen. Die zweitwichtigste Direktive ist betriebliche Einfachheit (`KISS`), um die Entwicklungsgeschwindigkeit für das MVP/Beta hochzuhalten. Skalierung erfolgt schrittweise durch klare Modulgrenzen.

@@ -1,225 +1,145 @@
-# Code Style Guidelines
+# Pinky – Code Style Guidelines (CODESTYLE.md)
 
-> Projekt: Pinky  
-> Stand: 2026-02-23  
-> Ziel: Lesbarer, konsistenter und sicherer Code, der in einem Team schnell wartbar ist und DSGVO-konform betrieben werden kann.
+> **Stand:** 2026-02-23  
+> **Ziel:** Lesbarer, konsistenter und sicherer Code, der im Team schnell wartbar ist und DSGVO-konform betrieben werden kann. Keine "magischen" Abstraktionen.
 
 ---
 
 ## 1. Grundprinzipien
 
-- **Consistency > Personal Preference**  
-  Bestehende Konventionen haben Vorrang vor persönlichem Stil.
-- **Small, composable units**  
-  Kleine Funktionen, Widgets und Komponenten mit klarer Verantwortung.
-- **Explicit > Implicit**  
-  Namen, Typen und Verantwortlichkeiten klar ausformulieren.
-- **Security & privacy by default**  
-  Keine personenbezogenen Daten in Logs. Datenzugriff immer tenant-sicher.
-- **Server-authoritative**  
-  Kritische Geschäftslogik und Berechtigungsentscheidungen liegen immer serverseitig (Supabase + RLS/Functions), nicht im Client.
+- **Consistency > Personal Preference:** Bestehende Konventionen haben Vorrang vor persönlichem Stil.
+- **Lesbarkeit vor Cleverness:** Klarheit vor Abstraktion. Code wird häufiger gelesen als geschrieben.
+- **Explicit > Implicit:** Explizit statt „magisch“ – Namen, Typen und Verantwortlichkeiten klar ausformulieren.
+- **Eine Datei = Eine Verantwortung:** Kleine, zusammensetzbare Einheiten (Units, Widgets, Komponenten) mit klarem Fokus.
+- **Security & Privacy by Default:** Keine personenbezogenen Daten in Logs. Datenzugriff immer tenant-sicher (siehe Multi-Tenant Regeln).
+- **Server-Authoritative:** Kritische Geschäftslogik und Berechtigungsentscheidungen liegen immer serverseitig (Supabase + RLS/Functions), niemals im Client.
+- **Einfacheit:** Der Code soll maximal simpel sein, damit auch unerfahrenen Entwickler das Projekt verstehen und erweitern können.
 
 ---
 
-## 2. Repository-Struktur
+## 2. Projekt- & Repository-Struktur
 
-### 2.1 Monorepo (Empfehlung)
+Code wird nach **fachlichen Features organisiert (Feature-first)**, nicht nach technischen Layern. Keine „utils“-Sammelordner ohne klaren, fokussierten Zweck.
 
+### 2.1 Monorepo-Aufbau (Empfehlung)
 ```text
 /apps
   /mobile                # Flutter App (Mitglieder)
   /admin-web             # Next.js Admin UI (Organisatoren)
 /packages
-  /shared                # Shared Types, utils, design tokens (TS)
-  /api-client            # Typed API client (TS, optional)
+  /shared                # Shared Types, Zod-Schemas, Design Tokens (TS)
+  /api-client            # API-Client Wrappers (TS, optional)
 /supabase
-  /migrations            # SQL Migrationen
-  /functions             # Supabase Edge Functions (TS)
-/docs
-CODESTYLE.md
-ARCHITECTURE.md
-SECURITY.md
+  /migrations            # SQL Migrationen (YYYYMMDDHHmm_<name>.sql)
+  /functions             # Supabase Edge Functions (TS, kebab-case Verzeichnis)
+/docs                    # ARCHITECTURE.md, CODESTYLE.md, PROJECT.md, etc.
 ```
 
-### 2.2 Naming
+### 2.2 Namenskonventionen
 
-- Ordner: `kebab-case` (z. B. `admin-web`)
-- Dateien:
-  - Flutter: `snake_case.dart`
-  - TS/React: `kebab-case.ts` oder `kebab-case.tsx`
-  - SQL Migrationen: `YYYYMMDDHHmm_<name>.sql`
-- Klassen/Typen/Interfaces: `PascalCase`
-- Funktionen/Variablen: `camelCase`
-- Konstanten: `SCREAMING_SNAKE_CASE`
-- Supabase Functions: `kebab-case` Verzeichnisname
-
----
-
-## 3. Formatting & Linting (verbindlich)
-
-### 3.1 Flutter / Dart
-
-- `dart format` ist **Pflicht**
-- `flutter analyze` darf im CI **keine Errors** haben
-- Lints: `flutter_lints` (MVP) oder `very_good_analysis` (strenger)
-
-**Regeln**
-- Keine `print()` in Produktion (nur strukturierter Logger)
-- Keine unnötigen `dynamic`
-- Null-Safety konsequent nutzen
-- `const` wo möglich
-- Businesslogik nicht im Widget
-
-### 3.2 TypeScript / Next.js / Edge Functions
-
-- Formatter: **Prettier**
-- Linter: **ESLint** (strict)
-- `tsconfig`: `strict: true`
-
-**Regeln**
-- Kein `any` (nur mit begründeter Ausnahme + Kommentar)
-- Komponenten möglichst pure; Side-effects in Hooks/Services
-- Keine Businesslogik in UI-Komponenten
-- Runtime-Validierung an externen Grenzen (z. B. mit `zod`)
-
-### 3.3 SQL / Supabase
-
-- SQL formatieren und kommentieren (Intention + Sicherheitsannahmen)
-- Jede Schemaänderung über Migrationen
-- RLS-Policies zusammen mit Tabellenänderungen versionieren
+- **Ordner:** `kebab-case` (z. B. `admin-web`, `task-matching`)
+- **Dateien:**
+  - TypeScript/React (Backend/Web): `kebab-case.ts` / `kebab-case.tsx`
+  - Dart/Flutter (Mobile): `snake_case.dart`
+- **TypeScript & Dart Identifier:**
+  - Klassen, Typen, Interfaces, Widgets: `PascalCase`
+  - Funktionen, Variablen, Instanzen: `camelCase`
+  - Konstanten (`const`): `SCREAMING_SNAKE_CASE` oder `camelCase` (je nach lokalem Linting, präferiert `camelCase` für einfache Laufzeitkonstanten in TypeScript).
 
 ---
 
-## 4. Architektur-Konventionen
+## 3. Formatting, Linting & Typisierung
 
-### 4.1 Flutter (Clean-ish)
+### 3.1 TypeScript (Web & Backend)
 
-Empfohlene Layer:
-- `features/<feature>/presentation` (Widgets, Screens)
-- `features/<feature>/application` (UseCases, State)
-- `features/<feature>/domain` (Entities, Interfaces)
-- `features/<feature>/infrastructure` (API, Repos, DTOs)
+- **Formatter & Linter:** Prettier & ESLint (strict) mit `tsconfig: { strict: true }`
+- **Kein `any`!** Typisiere API-Grenzen immer streng.
+- **Zod als Source of Truth:** Validierung eingehender Daten erfolgt über `zod` an der Systemgrenze (Controller, Endpunkte).
+  ```ts
+  // GOAL
+  export const createTaskSchema = z.object({ title: z.string().min(3) });
+  // NO
+  function createTask(data: any) {}
+  ```
+- **Error Handling:** Keine String-Throws. Verwende einheitliche, typisierte Error-Klassen.
+  ```ts
+  throw new ForbiddenError("User is not allowed"); // GOAL
+  throw "not allowed"; // NO
+  ```
 
-**State Management**
-- Primär: `Riverpod`
-- Kein Mischbetrieb mit mehreren State-Lösungen ohne RFC/Team-Entscheid
+### 3.2 Flutter/Dart (Mobile)
+
+- **Formatter & Linter:** `dart format` ist Pflicht; `flutter analyze` darf im CI null Fehler auswerfen (nutze strict Lints wie z.B. `very_good_analysis`).
+- **Sicherheit & Typen:** Null-Safety konsequent nutzen. Keine unnötigen `dynamic` Casts.
+- **Konstanten:** Verwende `const` Deklarationen überall, wo es für Widgets oder Laufzeitkonstanten möglich/empfohlen ist.
+- **Logs:** Kein `print()` in Produktion; strukturierten Logger (z. B. `logger` package) verwenden.
+
+---
+
+## 4. Architektur-Details & Layering
+
+### 4.1 Backend (Node.js/Edge Functions)
+**Controller / API Handler:**
+- Nimmt Requests entgegen.
+- Validiert Input (via Zod).
+- Ruft Service auf.
+- Keine eigene Business-Logik!
+**Services (Business-Logik):**
+- Enthält die eigentlichen Regeln und Abläufe.
+- Führt DB-Queries (z. B. via Prisma oder Supabase-Client) aus.
+- Setzt Domänenregeln (z. B. Tenant-Prüfungen) durch.
 
 ### 4.2 Web (Next.js)
+- UI ist "dumm". Sie ruft lediglich Services oder API-Endpunkte auf und stellt Zustand dar.
+- Validierung geschieht im Frontend nur für UX Forms (z.B. React Hook Form + Zod), die echte Validation bleibt serverseitig.
 
-- `app/` Router (Next 13+)
-- `components/` nur UI
-- `features/` domänenspezifisch (`tasks`, `orgs`, `users`)
-- `lib/` (`clients`, `utils`, `guards`)
-- `services/` API-Aufrufe und Domänenservices
-
-### 4.3 Edge Functions (Supabase)
-
-- Je Function ein klarer Zweck (`task-matching`, `notifications`, `exports-csv`, `webhooks`)
-- Gemeinsame Hilfen in Shared-Modulen statt Copy/Paste
-- Idempotenz bei Webhooks und Exports sicherstellen
-
----
-
-## 5. Datenzugriff & Multi-Tenant Regeln (KRITISCH)
-
-- Jede relevante Tabelle enthält `org_id` (oder `tenant_id`)
-- Zugriff ist **immer** über Membership und Rolle abgesichert
-- `org_id` vom Client **niemals blind vertrauen**
-- Keine quer-tenant Queries
-
-**Do**
-- `org_id` aus Session/JWT Claims ableiten
-- RLS als erste Verteidigungslinie nutzen
-- Service/Funktion prüft zusätzlich Domänenregeln
-
-**Don’t**
-- Direktes Vertrauen in Client-Filter (`where org_id = <client_input>`)
-- Admin-Bypass ohne Audit und explizite Berechtigung
+### 4.3 Flutter (Mobile App)
+- **Feature-first Layering:** `features/<feature>/presentation|application|domain|infrastructure`
+- **State Management:** Riverpod (oder äquivalent). Zustand und Logik leben in `StateNotifier`/`ControllerProvider`, niemals direkt im `Widget`.
+- **Widgets:** Nur für UI. Keine Businesslogik in `onPressed` abseits von Controller-Dispatch.
+  ```dart
+  // GOAL
+  onPressed: () => ref.read(microTaskControllerProvider.notifier).assign(id)
+  ```
 
 ---
 
-## 6. Auth, Secrets, DSGVO
+## 5. Datenzugriff & Tenant-Sicherheit (KRITISCH)
 
-- Auth über Supabase Auth (Email + Magic Link; später OAuth/Passkeys)
-- Secrets nur über Environment Variablen / Supabase Secrets
-- Keine Secrets im Repository, in Logs oder in Tickets
-- Datenminimierung: nur notwendige personenbezogene Daten speichern
-- Lösch- und Exportprozesse für Nutzerdaten berücksichtigen (DSGVO)
-
----
-
-## 7. Logging, Errors, Monitoring
-
-- Keine PII in Logs (E-Mail, Telefon, Name, Adresse)
-- Fehler haben:
-  - klare Message
-  - stabilen Fehlercode (`TASK_CREATE_FAILED`)
-  - Kontext ohne PII
-- Sentry in:
-  - Admin Web
-  - Flutter App
-  - Edge Functions
-- Releases/Environment-Tags konsistent setzen
+- **Mandanten-Isolation (`org_id` / `tenant_id`):** Jede mandantenrelevante Tabelle hat dieses Feld.
+- **Kein blindes Vertrauen:** Greife niemals auf Filter zu, die vom Client stammen (`where org_id = input.org_id`). Extrahiere die `org_id` immer aus dem sicheren Auth-Kontext (Session, JWT).
+- **Sicherungsschichten:** Das Backend und RLS (Row Level Security) setzen diese Regeln doppelt durch.
+- **Keine Quer-Abfragen:** Zugriff über mehrere Workspaces / Tenants ist im Standard-Betrieb strikt untersagt.
 
 ---
 
-## 8. Testing (Minimum)
+## 6. Auth, Secrets & DSGVO
 
-### Flutter
-- Unit: UseCases/Services
-- Widget Tests: kritische Screens (Login, Task Feed)
-
-### Web
-- Unit: utils/services
-- Component Tests (optional) für kritische UI
-
-### Supabase / Backend
-- SQL/RLS Tests für Tenant-Isolation
-- Function-Tests für:
-  - Task-Matching
-  - Notifications
-  - CSV Exporte
-  - Webhook-Verifikation
-
-### CI
-- Pflichtchecks: Lint + Typecheck + Tests
-- Keine Merges bei roten Pflichtchecks
+- **Secrets:** Nur über Environment Variables (`.env`) & native Secret-Stores der Plattform (Vercel/Supabase). Sie dürfen nicht im Code, Build oder Logs erscheinen.
+- **DSGVO & Logs:** Absolut keine Personally Identifiable Information (PII wie Namen, E-Mails, Adressen) in System-Logs (Sentry, Console).
+- Fehler erhalten stattdessen sichere Kontext-IDs und standardisierte Codes (z.B. `ErrorCode.TASK_CREATE_FAILED`).
 
 ---
 
-## 9. Git Workflow
+## 7. Testing & CI/CD
 
-- Branches: `feat/...`, `fix/...`, `chore/...`, `docs/...`
-- PR-Pflicht (außer klar definierter Hotfix-Prozess)
-- PR enthält:
-  - Beschreibung
-  - Testhinweise
-  - Screenshots bei UI-Änderungen
-
-**Commit Messages (Konvention)**
-- `feat: ...`
-- `fix: ...`
-- `chore: ...`
-- `docs: ...`
+**Minimum-Anforderungen an Automatisierung (GitHub Actions / GitLab CI):**
+- Pflichtchecks pro PR: Linting (grün), Typecheck (grün), Unit-Tests (grün). Keine Force-Merges über kaputte Checks.
+**Flutter:**
+- Unit Tests für UseCases/State-Logik (Controller). Smoke/Widget-Tests für kritische Pfade (Login, Task-List).
+**Backend & Web:**
+- Unit Tests für Services (Testen der eigentlichen Business-Logik ist Pflicht!). Keine Tests für Trivialitäten (Getter/Setter). Tests weisen nach, dass Statusübergänge stimmen (`expect(task.status).toBe("ASSIGNED")`).
+- RLS / DB Tests für SQL (Isolationspfade).
 
 ---
 
-## 10. Code Review Checkliste
+## 8. Definition of Done & Code Reviews
 
-- [ ] Tenant-Isolation sicher?
-- [ ] Keine PII in Logs?
-- [ ] Naming konsistent?
-- [ ] Keine Businesslogik in UI?
-- [ ] RLS + Policies berücksichtigt?
-- [ ] Tests/Checks laufen?
-- [ ] Keine unnötige Komplexität?
+**Code-Review Checkliste:**
+- [ ] Zieht die KI/der Mensch persönliche Geltung der Konsistenz vor? (Muss abgelehnt werden!)
+- [ ] Tenant-Isolation serverseitig garantiert? RLS-Policies berücksichtigt?
+- [ ] Keine Businesslogik in UI/Controllern platziert?
+- [ ] Naming konsistent, TS strict, Lints grün?
+- [ ] Keine PII-Lecks in Consolen-Prints oder Fehlerwerfungen?
 
----
-
-## 11. Definition of Done
-
-- Feature funktioniert (Happy Path + Fehlerfälle)
-- Lint/Format/Typecheck grün
-- Tenant-sicher (RLS + Codepfad geprüft)
-- Logging/Monitoring integriert (ohne PII)
-- Dokumentation aktualisiert (`CODESTYLE.md`, `ARCHITECTURE.md`, ggf. `SECURITY.md`)
+*Diese Regeln sind verbindlich für alle Developer, ob Mensch oder KI-Assistent (Copilot/Codex).*
