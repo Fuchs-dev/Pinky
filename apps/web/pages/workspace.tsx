@@ -29,7 +29,8 @@ const WorkspacePage: NextPage = () => {
     fetchMemberships(token)
       .then((data) => {
         setMemberships(data);
-        if (!storedOrgId && data.length > 0) {
+        const isValidStoredOrg = data.some((m) => m.organization.id === storedOrgId);
+        if ((!storedOrgId || !isValidStoredOrg) && data.length > 0) {
           setActiveOrgId(data[0].organization.id);
           localStorage.setItem("activeOrgId", data[0].organization.id);
         }
@@ -87,7 +88,7 @@ const WorkspacePage: NextPage = () => {
       <section style={{ marginTop: "1rem" }}>
         <strong>Active Organization:</strong>{" "}
         {activeOrg
-          ? `${activeOrg.organization.name} (${activeOrg.organization.id})`
+          ? `${activeOrg.organization.name} (${activeOrg.organization.id}) - My Score: ${activeOrg.strikeScore} 🪙`
           : "None"}
       </section>
       <section style={{ marginTop: "1rem" }}>
@@ -98,10 +99,25 @@ const WorkspacePage: NextPage = () => {
       </section>
       <section style={{ marginTop: "1.5rem" }}>
         <button
-          onClick={() => router.push("/microtasks")}
+          onClick={() => {
+            if (activeOrg) {
+              if (activeOrg.role === "ADMIN" || activeOrg.role === "ORGANIZER") {
+                router.push("/admin");
+              } else {
+                router.push("/feed");
+              }
+            }
+          }}
           disabled={!activeOrgId}
+          style={{ backgroundColor: "#0a9396", color: "#fff", border: "none", padding: "0.5rem 1rem", borderRadius: "4px", fontSize: "1.05rem", cursor: "pointer" }}
         >
-          Open MicroTask Feed
+          Workspace betreten →
+        </button>
+        <button
+          onClick={() => router.push("/profile")}
+          style={{ backgroundColor: "#e9ecef", color: "#333", border: "1px solid #ccc", padding: "0.5rem 1rem", borderRadius: "4px", fontSize: "1.05rem", cursor: "pointer", marginLeft: "1rem" }}
+        >
+          👤 Mein Profil
         </button>
       </section>
     </main>

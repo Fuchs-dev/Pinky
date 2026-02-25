@@ -12,17 +12,73 @@ import {
   getMicroTaskById,
   listMembershipsForUser,
   listMicroTasksForOrganization,
-  seedUserMemberships
+  listTaskOffersForUser,
+  seedUserMemberships,
+  acceptTaskOffer,
+  rejectTaskOffer,
+  assignMicroTask,
+  completeMicroTask,
+  listMyMicroTasks,
+  createTask,
+  createMicroTask,
+  getLeaderboard,
+  joinQueue,
+  leaveQueue,
+  unassignTask,
+  listMembershipsForOrganization,
+  updateUserProfile
 } from "./store";
+import { generateMicroTasksFromPrompt } from "./ai";
 
 const loginBodySchema = z.object({
   email: z.string().email(),
   displayName: z.string().min(1).optional()
 });
 
+const updateProfileBodySchema = z.object({
+  displayName: z.string().min(1).optional(),
+  age: z.number().int().min(0).optional(),
+  gender: z.enum(["female", "male", "diverse", "preferNotToSay"]).optional(),
+  department: z.string().optional(),
+  interests: z.string().optional(),
+  qualifications: z.string().optional(),
+  hasDriversLicense: z.boolean().optional(),
+  helpContext: z.string().optional(),
+  weeklyTimeBudgetMinutes: z.number().int().min(0).optional()
+});
+
 const orgHeaderSchema = z.string().uuid();
-const microTaskStatusSchema = z.enum(["OPEN", "ASSIGNED", "DONE"]);
 const microTaskIdSchema = z.string().uuid();
+const taskIdSchema = z.string().uuid();
+
+const createTaskBodySchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  category: z.string().optional()
+});
+
+const splitTaskBodySchema = z.object({
+  prompt: z.string().min(1)
+});
+
+const createMicroTaskBodySchema = z.object({
+  title: z.string().min(1),
+  description_how: z.string().optional(),
+  impactReason: z.string().optional(),
+  location: z.string().optional(),
+  contactPerson: z.string().optional(),
+  estimatedDuration: z.string().optional(),
+  attachments: z.string().optional(),
+  assignedUserId: z.string().uuid().optional(),
+  dueAt: z.string().datetime().optional(),
+  rewardPoints: z.number().int().min(0).optional()
+});
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-org-id",
+};
 
 const jsonResponse = (
   response: ServerResponse,
@@ -32,7 +88,8 @@ const jsonResponse = (
   const body = JSON.stringify(payload);
   response.writeHead(statusCode, {
     "Content-Type": "application/json",
-    "Content-Length": Buffer.byteLength(body)
+    "Content-Length": Buffer.byteLength(body),
+    ...corsHeaders
   });
   response.end(body);
 };
@@ -45,9 +102,9 @@ const errorResponse = (
 ) => jsonResponse(response, statusCode, { message, code });
 
 const parseJsonBody = async (request: IncomingMessage) => {
-  const chunks: Buffer[] = [];
+  const chunks: any[] = [];
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    chunks.push(chunk);
   }
 
   if (chunks.length === 0) {
@@ -64,6 +121,7 @@ const isPublicPath = (pathname: string) =>
 const isOrgGuardedPath = (pathname: string) =>
   !isPublicPath(pathname) &&
   pathname !== "/me" &&
+  pathname !== "/me/profile" &&
   pathname !== "/me/memberships";
 
 const extractBearerToken = (request: IncomingMessage) => {
@@ -78,7 +136,7 @@ const extractBearerToken = (request: IncomingMessage) => {
   return token;
 };
 
-const authenticateRequest = (request: IncomingMessage) => {
+const authenticateRequest = async (request: IncomingMessage) => {
   const token = extractBearerToken(request);
   if (!token) {
     return null;
@@ -87,10 +145,10 @@ const authenticateRequest = (request: IncomingMessage) => {
   if (!payload) {
     return null;
   }
-  return getUserById(payload.userId) ?? null;
+  return await getUserById(payload.userId) ?? null;
 };
 
-const getOrgContext = (request: IncomingMessage, userId: string) => {
+const getOrgContext = async (request: IncomingMessage, userId: string) => {
   const header = request.headers["x-org-id"];
   if (typeof header !== "string") {
     return { error: "missing" as const };
@@ -99,7 +157,7 @@ const getOrgContext = (request: IncomingMessage, userId: string) => {
   if (!parsed.success) {
     return { error: "invalid" as const };
   }
-  const membership = findMembership(userId, parsed.data);
+  const membership = await findMembership(userId, parsed.data);
   if (!membership || membership.status !== "ACTIVE") {
     return { error: "forbidden" as const };
   }
@@ -123,72 +181,121 @@ const handleLogin = async (request: IncomingMessage, response: ServerResponse) =
   }
 
   const { email, displayName } = parsed.data;
-  let user = getUserByEmail(email);
+  let user = await getUserByEmail(email);
   if (!user) {
-    user = createUser(email, displayName);
+    user = await createUser(email, displayName);
   }
-  seedUserMemberships(user);
-  ensureSeedMicroTasksForUser(user.id);
+  await seedUserMemberships(user);
+  await ensureSeedMicroTasksForUser(user.id);
   const accessToken = createAccessToken(user.id);
   return jsonResponse(response, 200, { accessToken });
 };
 
-const handleMe = (response: ServerResponse, userId: string) => {
-  const user = getUserById(userId);
+const handleMe = async (response: ServerResponse, userId: string) => {
+  const user = await getUserById(userId);
   if (!user) {
     return errorResponse(response, 404, "User not found", "USER_NOT_FOUND");
   }
   return jsonResponse(response, 200, {
     id: user.id,
     email: user.email,
-    displayName: user.displayName
+    displayName: user.displayName,
+    age: user.age,
+    gender: user.gender,
+    department: user.department,
+    interests: user.interests,
+    qualifications: user.qualifications,
+    hasDriversLicense: user.hasDriversLicense,
+    helpContext: user.helpContext,
+    weeklyTimeBudgetMinutes: user.weeklyTimeBudgetMinutes
   });
 };
 
-const handleMemberships = (response: ServerResponse, userId: string) => {
-  const memberships = listMembershipsForUser(userId).map((membership) => {
-    const organization = getOrganizationById(membership.organizationId);
+const handleUpdateProfile = async (request: IncomingMessage, response: ServerResponse, userId: string) => {
+  let body: unknown;
+  try {
+    body = await parseJsonBody(request);
+  } catch {
+    return errorResponse(response, 400, "Invalid JSON payload", "INVALID_JSON");
+  }
+
+  const parsed = updateProfileBodySchema.safeParse(body);
+  if (!parsed.success) {
+    return errorResponse(response, 400, "Invalid profile payload", "INVALID_BODY");
+  }
+
+  try {
+    const updated = await updateUserProfile(userId, parsed.data);
+    return jsonResponse(response, 200, {
+      id: updated.id,
+      email: updated.email,
+      displayName: updated.displayName,
+      age: updated.age,
+      gender: updated.gender,
+      department: updated.department,
+      interests: updated.interests,
+      qualifications: updated.qualifications,
+      hasDriversLicense: updated.hasDriversLicense,
+      helpContext: updated.helpContext,
+      weeklyTimeBudgetMinutes: updated.weeklyTimeBudgetMinutes
+    });
+  } catch (err: any) {
+    return errorResponse(response, 404, err.message, "NOT_FOUND");
+  }
+};
+
+const handleMemberships = async (response: ServerResponse, userId: string) => {
+  const rawMemberships = await listMembershipsForUser(userId);
+  const memberships = await Promise.all(rawMemberships.map(async (membership) => {
+    const organization = await getOrganizationById(membership.organizationId);
     return {
       organization: organization
         ? { id: organization.id, name: organization.name }
         : { id: membership.organizationId, name: "Unknown" },
-      role: membership.role
+      role: membership.role,
+      strikeScore: membership.strikeScore
     };
-  });
+  }));
   return jsonResponse(response, 200, memberships);
 };
 
-const handleMicroTaskList = (
+const handleMicroTaskFeed = async (
   response: ServerResponse,
   orgId: string,
-  searchParams: URLSearchParams
+  userId: string
 ) => {
-  const statusParam = searchParams.get("status");
-  const parsedStatus = statusParam
-    ? microTaskStatusSchema.safeParse(statusParam)
-    : { success: true, data: "OPEN" as const };
-  if (!parsedStatus.success) {
-    return errorResponse(response, 400, "Invalid status", "INVALID_STATUS");
-  }
+  const allMicroTasks = await listMicroTasksForOrganization(orgId);
+  const microTasks = allMicroTasks.filter(t => t.status === "OPEN" || t.status === "ASSIGNED");
+  const offers = await listTaskOffersForUser(userId);
+  const suggestedOffers = offers.filter((o) => o.status === "SUGGESTED");
+  const offeredIds = new Set(suggestedOffers.map(o => o.microTaskId));
 
-  const microTasks = listMicroTasksForOrganization(
-    orgId,
-    parsedStatus.data
-  ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  const payload = microTasks.map((microTask) => {
-    const task = getTaskById(microTask.taskId);
-    return {
+  const offered: any[] = [];
+  const open: any[] = [];
+
+  for (const microTask of microTasks) {
+    const task = await getTaskById(microTask.taskId);
+    const payload = {
       id: microTask.id,
       title: microTask.title,
       status: microTask.status,
       task: task ? { id: task.id, title: task.title } : null,
-      dueAt: microTask.dueAt ?? null
+      timeframe: microTask.dueAt ?? null,
+      location: microTask.location ?? null,
+      rewardPoints: microTask.rewardPoints
     };
-  });
-  return jsonResponse(response, 200, payload);
+
+    if (offeredIds.has(microTask.id)) {
+      offered.push(payload);
+    } else {
+      open.push(payload);
+    }
+  }
+
+  return jsonResponse(response, 200, { offered, open });
 };
 
-const handleMicroTaskDetail = (
+const handleMicroTaskDetail = async (
   response: ServerResponse,
   orgId: string,
   microTaskId: string
@@ -197,20 +304,276 @@ const handleMicroTaskDetail = (
   if (!parsedId.success) {
     return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
   }
-  const microTask = getMicroTaskById(parsedId.data);
+  const microTask = await getMicroTaskById(parsedId.data);
   if (!microTask || microTask.organizationId !== orgId) {
     return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
   }
-  const task = getTaskById(microTask.taskId);
+  const task = await getTaskById(microTask.taskId);
   return jsonResponse(response, 200, {
     id: microTask.id,
     title: microTask.title,
-    description: microTask.description ?? null,
+    description_how: microTask.descriptionHow ?? null,
+    location: microTask.location ?? null,
+    contactPerson: microTask.contactPerson ?? null,
+    estimatedDuration: microTask.estimatedDuration ?? null,
+    attachments: microTask.attachments ?? null,
+    impactReason: microTask.impactReason ?? null,
+    rewardPoints: microTask.rewardPoints,
     status: microTask.status,
     task: task ? { id: task.id, title: task.title } : null,
     dueAt: microTask.dueAt ?? null,
     createdAt: microTask.createdAt
   });
+};
+
+const handleAcceptOffer = async (response: ServerResponse, orgId: string, userId: string, microTaskId: string) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+
+  const microTask = await getMicroTaskById(parsedId.data);
+  if (!microTask) return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+  if (microTask.organizationId !== orgId) return errorResponse(response, 404, "MicroTask not found in org", "NOT_FOUND");
+
+  try {
+    await acceptTaskOffer(microTask.id, userId);
+    return jsonResponse(response, 200, {
+      id: microTask.id,
+      status: "ASSIGNED",
+      assignedUserId: userId
+    });
+  } catch (error: any) {
+    if (error.message.includes("not found")) return errorResponse(response, 404, error.message, "NOT_FOUND");
+    return errorResponse(response, 409, error.message, "CONFLICT");
+  }
+};
+
+const handleRejectOffer = async (response: ServerResponse, orgId: string, userId: string, microTaskId: string) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+
+  const microTask = await getMicroTaskById(parsedId.data);
+  if (!microTask) return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+  if (microTask.organizationId !== orgId) return errorResponse(response, 404, "MicroTask not found in org", "NOT_FOUND");
+
+  try {
+    const offer = await rejectTaskOffer(microTask.id, userId);
+    return jsonResponse(response, 200, {
+      id: microTask.id,
+      offerStatus: offer.status
+    });
+  } catch (error: any) {
+    if (error.message.includes("not found")) return errorResponse(response, 404, error.message, "NOT_FOUND");
+    return errorResponse(response, 409, error.message, "CONFLICT");
+  }
+};
+
+const handleAssignTask = async (response: ServerResponse, orgId: string, userId: string, microTaskId: string) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+
+  const microTask = await getMicroTaskById(parsedId.data);
+  if (!microTask) return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+  if (microTask.organizationId !== orgId) return errorResponse(response, 404, "MicroTask not found in org", "NOT_FOUND");
+
+  try {
+    const assignedTask = await assignMicroTask(microTask.id, userId);
+    return jsonResponse(response, 200, {
+      id: assignedTask.id,
+      status: assignedTask.status,
+      assignedUserId: assignedTask.assignedUserId
+    });
+  } catch (error: any) {
+    if (error.message.includes("not found")) return errorResponse(response, 404, error.message, "NOT_FOUND");
+    return errorResponse(response, 409, error.message, "CONFLICT");
+  }
+};
+
+const handleCompleteTask = async (response: ServerResponse, orgId: string, userId: string, microTaskId: string) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+
+  const microTask = await getMicroTaskById(parsedId.data);
+  if (!microTask) return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+  if (microTask.organizationId !== orgId) return errorResponse(response, 404, "MicroTask not found in org", "NOT_FOUND");
+
+  try {
+    const completedTask = await completeMicroTask(microTask.id, userId);
+    return jsonResponse(response, 200, {
+      id: completedTask.id,
+      status: completedTask.status
+    });
+  } catch (error: any) {
+    if (error.message.includes("Not assigned to user")) return errorResponse(response, 403, error.message, "FORBIDDEN");
+    if (error.message.includes("not found")) return errorResponse(response, 404, error.message, "NOT_FOUND");
+    return errorResponse(response, 409, error.message, "CONFLICT");
+  }
+};
+
+const handleJoinQueue = async (response: ServerResponse, orgId: string, userId: string, microTaskId: string) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+
+  const microTask = await getMicroTaskById(parsedId.data);
+  if (!microTask) return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+  if (microTask.organizationId !== orgId) return errorResponse(response, 404, "MicroTask not found in org", "NOT_FOUND");
+
+  try {
+    const intent = await joinQueue(microTask.id, userId);
+    return jsonResponse(response, 200, intent);
+  } catch (error: any) {
+    if (error.message.includes("User already in queue")) return errorResponse(response, 409, error.message, "CONFLICT");
+    return errorResponse(response, 400, error.message, "BAD_REQUEST");
+  }
+};
+
+const handleLeaveQueue = async (response: ServerResponse, orgId: string, userId: string, microTaskId: string) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+
+  try {
+    await leaveQueue(parsedId.data, userId);
+    return jsonResponse(response, 200, { status: "withdrawn" });
+  } catch (error: any) {
+    return errorResponse(response, 400, error.message, "BAD_REQUEST");
+  }
+};
+
+const handleUnassignTask = async (response: ServerResponse, orgId: string, userId: string, microTaskId: string) => {
+  const parsedId = microTaskIdSchema.safeParse(microTaskId);
+  if (!parsedId.success) return errorResponse(response, 400, "Invalid microtask id", "INVALID_ID");
+
+  const microTask = await getMicroTaskById(parsedId.data);
+  if (!microTask) return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+  if (microTask.organizationId !== orgId) return errorResponse(response, 404, "MicroTask not found in org", "NOT_FOUND");
+
+  try {
+    const updatedTask = await unassignTask(microTask.id, userId);
+    return jsonResponse(response, 200, {
+      id: updatedTask.id,
+      status: updatedTask.status,
+      assignedUserId: updatedTask.assignedUserId
+    });
+  } catch (error: any) {
+    if (error.message.includes("Not assigned to user")) return errorResponse(response, 403, error.message, "FORBIDDEN");
+    return errorResponse(response, 409, error.message, "CONFLICT");
+  }
+};
+
+const handleCreateTask = async (request: IncomingMessage, response: ServerResponse, orgId: string, role: string) => {
+  if (role !== "ADMIN" && role !== "ORGANIZER") {
+    return errorResponse(response, 403, "Insufficient permissions to create tasks", "FORBIDDEN_ROLE");
+  }
+  let body: unknown;
+  try {
+    body = await parseJsonBody(request);
+  } catch {
+    return errorResponse(response, 400, "Invalid JSON payload", "INVALID_JSON");
+  }
+  const parsed = createTaskBodySchema.safeParse(body);
+  if (!parsed.success) return errorResponse(response, 400, "Invalid payload", "INVALID_BODY");
+
+  const task = await createTask(orgId, parsed.data.title, parsed.data.description, parsed.data.category);
+  return jsonResponse(response, 201, { id: task.id });
+};
+
+const handleSplitTask = async (request: IncomingMessage, response: ServerResponse, orgId: string, role: string) => {
+  if (role !== "ADMIN" && role !== "ORGANIZER") {
+    return errorResponse(response, 403, "Insufficient permissions to use AI splitting", "FORBIDDEN_ROLE");
+  }
+
+  let body: unknown;
+  try {
+    body = await parseJsonBody(request);
+  } catch {
+    return errorResponse(response, 400, "Invalid JSON payload", "INVALID_JSON");
+  }
+
+  const parsed = splitTaskBodySchema.safeParse(body);
+  if (!parsed.success) return errorResponse(response, 400, "Invalid payload", "INVALID_BODY");
+
+  try {
+    const rawMembers = await listMembershipsForOrganization(orgId);
+
+    // Anonymize/Pseudonymize data for the AI
+    const anonymizedUsers = rawMembers.map((m, i) => ({
+      alias: `Person_${i + 1}`,
+      role: m.role,
+      originalId: m.userId
+    }));
+
+    // Generate tasks via LLM
+    const generatedTasks = await generateMicroTasksFromPrompt(parsed.data.prompt, anonymizedUsers);
+
+    // Map aliases back to real IDs
+    const mappedTasks = generatedTasks.map((t: any) => {
+      const match = anonymizedUsers.find(u => u.alias === t.suggestedAssigneeAlias);
+      return {
+        title: t.title,
+        description_how: t.description_how,
+        location: t.location,
+        estimatedDuration: t.estimatedDuration,
+        rewardPoints: t.rewardPoints,
+        impactReason: t.impactReason,
+        suggestedAssigneeId: match ? match.originalId : null
+      };
+    });
+
+    return jsonResponse(response, 200, { microTasks: mappedTasks });
+  } catch (error: any) {
+    console.error("AI Split Error:", error);
+    return errorResponse(response, 500, "Failed to generate tasks", "AI_ERROR");
+  }
+};
+
+const handleCreateMicroTask = async (request: IncomingMessage, response: ServerResponse, orgId: string, role: string, taskId: string) => {
+  if (role !== "ADMIN" && role !== "ORGANIZER") {
+    return errorResponse(response, 403, "Insufficient permissions to create microtasks", "FORBIDDEN_ROLE");
+  }
+  const parsedTaskId = taskIdSchema.safeParse(taskId);
+  if (!parsedTaskId.success) return errorResponse(response, 400, "Invalid task id", "INVALID_ID");
+
+  let body: unknown;
+  try {
+    body = await parseJsonBody(request);
+  } catch {
+    return errorResponse(response, 400, "Invalid JSON payload", "INVALID_JSON");
+  }
+  const parsed = createMicroTaskBodySchema.safeParse(body);
+  if (!parsed.success) return errorResponse(response, 400, "Invalid payload", "INVALID_BODY");
+
+  try {
+    const microTask = await createMicroTask({
+      organizationId: orgId,
+      taskId: parsedTaskId.data,
+      ...parsed.data
+    });
+    return jsonResponse(response, 201, { id: microTask.id });
+  } catch (error: any) {
+    if (error.message.includes("not found")) return errorResponse(response, 404, error.message, "NOT_FOUND");
+    return errorResponse(response, 400, error.message, "BAD_REQUEST");
+  }
+};
+
+const handleMyMicroTasks = async (response: ServerResponse, orgId: string, userId: string) => {
+  const myTasks = await listMyMicroTasks(orgId, userId);
+  const payload = await Promise.all(myTasks.map(async (microTask) => {
+    const task = await getTaskById(microTask.taskId);
+    return {
+      id: microTask.id,
+      title: microTask.title,
+      status: microTask.status,
+      task: task ? { id: task.id, title: task.title } : null,
+      timeframe: microTask.dueAt ?? null,
+      location: microTask.location ?? null,
+      rewardPoints: microTask.rewardPoints
+    };
+  }));
+  return jsonResponse(response, 200, payload);
+};
+
+const handleLeaderboard = async (response: ServerResponse, orgId: string) => {
+  const leaderboard = await getLeaderboard(orgId);
+  return jsonResponse(response, 200, leaderboard);
 };
 
 const handleOrgPing = (
@@ -226,81 +589,159 @@ const handleOrgPing = (
 
 export const createApiServer = () =>
   createServer(async (request: IncomingMessage, response: ServerResponse) => {
-    const method = request.method ?? "GET";
-    const url = new URL(request.url ?? "/", "http://localhost");
-    const pathname = url.pathname;
+    try {
+      const method = request.method ?? "GET";
+      const url = new URL(request.url ?? "/", "http://localhost");
+      const pathname = url.pathname;
 
-    if (method === "GET" && pathname === "/health") {
-      return jsonResponse(response, 200, { status: "ok" });
+      if (method === "OPTIONS") {
+        response.writeHead(204, corsHeaders);
+        response.end();
+        return;
+      }
+
+      if (method === "GET" && pathname === "/health") {
+        return jsonResponse(response, 200, { status: "ok" });
+      }
+
+      if (method === "POST" && pathname === "/auth/login") {
+        return await handleLogin(request, response);
+      }
+
+      if (!isPublicPath(pathname)) {
+        const user = await authenticateRequest(request);
+        if (!user) {
+          return errorResponse(response, 401, "Unauthorized", "UNAUTHORIZED");
+        }
+
+        if (isOrgGuardedPath(pathname)) {
+          const orgContext = await getOrgContext(request, user.id);
+          if (orgContext.error === "missing") {
+            return errorResponse(
+              response,
+              400,
+              "Missing X-Org-Id header",
+              "MISSING_ORG_HEADER"
+            );
+          }
+          if (orgContext.error === "invalid") {
+            return errorResponse(
+              response,
+              400,
+              "Invalid X-Org-Id header",
+              "INVALID_ORG_HEADER"
+            );
+          }
+          if (orgContext.error === "forbidden") {
+            return errorResponse(
+              response,
+              403,
+              "Forbidden",
+              "FORBIDDEN"
+            );
+          }
+
+          if (method === "GET" && pathname === "/org/ping") {
+            return handleOrgPing(
+              response,
+              orgContext.orgId,
+              orgContext.role
+            );
+          }
+
+          if (method === "GET" && pathname === "/org/leaderboard") {
+            return await handleLeaderboard(
+              response,
+              orgContext.orgId
+            );
+          }
+
+          if (method === "GET" && pathname === "/microtasks/feed") {
+            return await handleMicroTaskFeed(
+              response,
+              orgContext.orgId,
+              user.id
+            );
+          }
+
+          if (method === "GET" && pathname === "/me/microtasks") {
+            return await handleMyMicroTasks(
+              response,
+              orgContext.orgId,
+              user.id
+            );
+          }
+
+          if (method === "GET" && pathname.startsWith("/microtasks/")) {
+            const microTaskId = pathname.replace("/microtasks/", "");
+            return await handleMicroTaskDetail(response, orgContext.orgId, microTaskId);
+          }
+
+          if (method === "POST" && pathname === "/tasks") {
+            return await handleCreateTask(request, response, orgContext.orgId, orgContext.role);
+          }
+
+          if (method === "POST" && pathname.startsWith("/tasks/") && pathname.endsWith("/microtasks")) {
+            const parts = pathname.split("/");
+            if (parts.length === 4) {
+              const taskId = parts[2];
+              return await handleCreateMicroTask(request, response, orgContext.orgId, orgContext.role, taskId);
+            }
+          }
+
+          if (method === "POST" && pathname === "/ai/split-task") {
+            return await handleSplitTask(request, response, orgContext.orgId, orgContext.role);
+          }
+
+          if (method === "POST" && pathname.startsWith("/microtasks/")) {
+            const parts = pathname.split("/");
+            if (parts.length === 5 && parts[3] === "offer" && parts[4] === "accept") {
+              const microTaskId = parts[2];
+              return await handleAcceptOffer(response, orgContext.orgId, user.id, microTaskId);
+            }
+            if (parts.length === 5 && parts[3] === "offer" && parts[4] === "reject") {
+              const microTaskId = parts[2];
+              return await handleRejectOffer(response, orgContext.orgId, user.id, microTaskId);
+            }
+            if (parts.length === 4 && parts[3] === "assign") {
+              const microTaskId = parts[2];
+              return await handleAssignTask(response, orgContext.orgId, user.id, microTaskId);
+            }
+            if (parts.length === 4 && parts[3] === "complete") {
+              const microTaskId = parts[2];
+              return await handleCompleteTask(response, orgContext.orgId, user.id, microTaskId);
+            }
+            if (parts.length === 4 && parts[3] === "unassign") {
+              const microTaskId = parts[2];
+              return await handleUnassignTask(response, orgContext.orgId, user.id, microTaskId);
+            }
+            if (parts.length === 5 && parts[3] === "queue" && parts[4] === "join") {
+              const microTaskId = parts[2];
+              return await handleJoinQueue(response, orgContext.orgId, user.id, microTaskId);
+            }
+            if (parts.length === 5 && parts[3] === "queue" && parts[4] === "leave") {
+              const microTaskId = parts[2];
+              return await handleLeaveQueue(response, orgContext.orgId, user.id, microTaskId);
+            }
+          }
+        }
+
+        if (method === "GET" && pathname === "/me") {
+          return await handleMe(response, user.id);
+        }
+
+        if (method === "PUT" && pathname === "/me/profile") {
+          return await handleUpdateProfile(request, response, user.id);
+        }
+
+        if (method === "GET" && pathname === "/me/memberships") {
+          return await handleMemberships(response, user.id);
+        }
+      }
+
+      return errorResponse(response, 404, "Not Found", "NOT_FOUND");
+    } catch (err: any) {
+      console.error(err);
+      return errorResponse(response, 500, "Internal Server Error", "INTERNAL_ERROR");
     }
-
-    if (method === "POST" && pathname === "/auth/login") {
-      return handleLogin(request, response);
-    }
-
-    if (!isPublicPath(pathname)) {
-      const user = authenticateRequest(request);
-      if (!user) {
-        return errorResponse(response, 401, "Unauthorized", "UNAUTHORIZED");
-      }
-
-      if (isOrgGuardedPath(pathname)) {
-        const orgContext = getOrgContext(request, user.id);
-        if (orgContext.error === "missing") {
-          return errorResponse(
-            response,
-            400,
-            "Missing X-Org-Id header",
-            "MISSING_ORG_HEADER"
-          );
-        }
-        if (orgContext.error === "invalid") {
-          return errorResponse(
-            response,
-            400,
-            "Invalid X-Org-Id header",
-            "INVALID_ORG_HEADER"
-          );
-        }
-        if (orgContext.error === "forbidden") {
-          return errorResponse(
-            response,
-            403,
-            "Forbidden",
-            "FORBIDDEN"
-          );
-        }
-
-        if (method === "GET" && pathname === "/org/ping") {
-          return handleOrgPing(
-            response,
-            orgContext.orgId,
-            orgContext.role
-          );
-        }
-
-        if (method === "GET" && pathname === "/microtasks") {
-          return handleMicroTaskList(
-            response,
-            orgContext.orgId,
-            url.searchParams
-          );
-        }
-
-        if (method === "GET" && pathname.startsWith("/microtasks/")) {
-          const microTaskId = pathname.replace("/microtasks/", "");
-          return handleMicroTaskDetail(response, orgContext.orgId, microTaskId);
-        }
-      }
-
-      if (method === "GET" && pathname === "/me") {
-        return handleMe(response, user.id);
-      }
-
-      if (method === "GET" && pathname === "/me/memberships") {
-        return handleMemberships(response, user.id);
-      }
-    }
-
-    return errorResponse(response, 404, "Not Found", "NOT_FOUND");
   });

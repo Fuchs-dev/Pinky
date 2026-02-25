@@ -1,83 +1,60 @@
-# Ticket 0003 – MicroTask übernehmen & abschließen (Statuswechsel + Verantwortung)
+# Ticket 0003 – MicroTask Angebote annehmen & MyTasks Ansicht
 
 ## Kontext
-Nach Ticket 0002 können Nutzer im aktiven Workspace offene MicroTasks (`OPEN`) sehen und deren Details aufrufen.  
+Nach Ticket 0002 können Nutzer im aktiven Workspace "Angebote für mich" sowie "Weitere offene Aufgaben" sehen und deren Details aufrufen.  
 Jetzt soll die erste **echte Interaktion** möglich werden:  
-Ein Nutzer übernimmt eine MicroTask verbindlich und kann sie anschließend als erledigt markieren.
+Ein Nutzer nimmt ein explizites Angebot an (`TaskOffer` -> ACCEPTED) oder übernimmt eine allgemein offene Aufgabe. Anschließend kann er sie als erledigt markieren.
 
-Dieses Ticket ist der erste **Write-Flow** im System und setzt zentrale fachliche Regeln durch:
-- Zustandsübergänge
-- Verantwortung (Ownership)
-- Serverseitige Business-Logik
+Dieses Ticket baut den ersten **Write-Flow** auf und setzt folgende Regeln um:
+- Annahme / Ablehnung von KI-Angeboten
+- Verantwortung (Ownership) für Aufgaben
+- Eine neue Ansicht: "Meine Aufgaben" (angenommen und erledigt)
 
 ---
 
 ## Ziel
-1) Ein Nutzer kann eine `OPEN` MicroTask übernehmen → Status wird `ASSIGNED`.  
-2) Eine übernommene MicroTask kann vom zuständigen Nutzer als `DONE` markiert werden.  
-3) Statuswechsel werden **ausschließlich serverseitig** geprüft und durchgeführt.  
-4) Feed und Detailansicht aktualisieren sich entsprechend (MicroTask verschwindet aus `OPEN`).  
-5) Die Regeln aus dem Domainmodell werden strikt eingehalten.
+1) Ein Nutzer kann ein Angebot annehmen (`TaskOffer -> ACCEPTED`, `MicroTask -> ASSIGNED`) oder ablehnen (`TaskOffer -> REJECTED`).  
+2) Ein Nutzer kann eine reguläre `OPEN` MicroTask übernehmen → Status wird `ASSIGNED`.  
+3) Eine übernommene MicroTask landet zwingend in einer eigenen Liste "Meine Aufgaben" des Users.
+4) Dort kann die Aufgabe vom zuständigen Nutzer als `DONE` markiert werden ("Liste zeigt angenommene und abgeschlossene").  
+5) Die Regeln aus dem Domainmodell werden strikt serverseitig eingehalten.
 
 ---
 
 ## Scope
 
 ### In Scope
-- Backend-Endpunkte für Statusänderungen:
-  - `POST /microtasks/:id/assign`
+- Backend-Endpunkte:
+  - `POST /microtasks/:id/offer/accept`
+  - `POST /microtasks/:id/offer/reject`
+  - `POST /microtasks/:id/assign` (reguläre offene Tasks)
   - `POST /microtasks/:id/complete`
-- Serverseitige Validierung aller Statusübergänge
-- Ownership-Regeln (wer darf was?)
+  - `GET /me/microtasks` (Meine Aufgaben: ASSIGNED & DONE)
+- Serverseitige Validierung aller Zustandsübergänge
 - UI-Erweiterungen in Web & Mobile:
-  - Button „Übernehmen“
-  - Button „Als erledigt markieren“
-- Aktualisierung der Listen/Detailansichten nach Statuswechsel
-- Backend-Tests für alle relevanten Status- und Fehlerfälle
-
-### Out of Scope
-- Zurücksetzen von Status (`DONE` → `OPEN`)
-- Reassign / Abgeben von MicroTasks
-- Blockieren (`BLOCKED`)
-- Activity-Log / Historie (kommt später)
-- Benachrichtigungen
+  - Button „Angebot annehmen“ / „Ablehnen“ bei Angeboten
+  - Button „Übernehmen“ bei generischen OPEN Tasks
+  - Eigener Screen/Bereich: **"Meine Aufgaben"**
+  - Button „Als erledigt markieren“ in "Meine Aufgaben"
+- Backend-Tests für alle relevanten Statusfälle
 
 ---
 
 ## Referenzen (verbindlich)
-- `/docs/DOMAIN.md` (MicroTask, Statusmodell, Ownership)
+## Referenzen (verbindlich)
+- `/docs/PROJECT.md` (KI-Matching, MyTasks Liste, Statusmodell)
 - `/docs/ARCHITECTURE.md`
-- `/docs/DECISIONS.md`
-- `/docs/STYLEGUIDE.md`
-- Ticket 0001 (Auth + Org-Kontext)
-- Ticket 0002 (MicroTask Feed & Detail)
+- `/docs/CODESTYLE.md` (Code extrem simpel halten!)
+- Ticket 0001 & 0002
 
 ---
 
-## Fachliche Regeln (aus DOMAIN.md)
-
-### Statusmodell
-- `OPEN` → frei, noch nicht übernommen
-- `ASSIGNED` → von genau einem User übernommen
-- `DONE` → abgeschlossen
-
-Erlaubte Übergänge:
-- `OPEN → ASSIGNED`
-- `ASSIGNED → DONE`
-
-Nicht erlaubt:
-- `DONE → *`
-- `OPEN → DONE`
-- `ASSIGNED → ASSIGNED` (erneutes Übernehmen)
-
----
-
-### Ownership-Regeln
-- Eine MicroTask kann **nur von einem User gleichzeitig** übernommen werden.
-- Nur der User, der die MicroTask übernommen hat (`assignedUserId`),
-  darf sie als `DONE` markieren.
-- Organizer/Admins bekommen **keine Sonderrechte** in diesem Ticket
-  (Bewusst simpel, spätere Erweiterung möglich).
+## Fachliche Regeln
+- `OPEN` → `ASSIGNED`: Wenn Angebot angenommen oder generisch übernommen.
+- Bei Angebotsablehnung wird `TaskOffer` auf `REJECTED` gesetzt; die `MicroTask` bleibt/wird `OPEN` für den allgemeinen Feed.
+- `ASSIGNED` → `DONE`: Wenn der verantwortliche User es abschließt.
+- Meine Aufgaben (MyTasks): Zeigt alle `ASSIGNED` und `DONE` Tasks des authentifizierten Nutzers für die aktuelle Orga.
+- Eine MicroTask hat nur einen Verantworlichen (`assignedUserId`).
 
 ---
 
@@ -187,92 +164,39 @@ Org-Isolation:
 
 falsche Org → 404
 
-Web App – Anforderungen (Next.js)
-Feed (/microtasks)
-MicroTask mit Status OPEN:
+Web App & Mobile App – Anforderungen
 
-Button: „Übernehmen“
+Feed (/feed)
+Bei "Angebot für mich":
+- Zeigt Buttons: „Annehmen“ und „Ignorieren/Ablehnen“
+- Nach Klick → Task verschwindet aus Feed (Bei Annahme wandert er in MyTasks)
 
-Nach erfolgreichem Übernehmen:
+Bei "Offen":
+- Zeigt Button: „Übernehmen“
 
-Task verschwindet aus Feed
+Meine Aufgaben (/feed/my-tasks)
+- Zeigt Liste aller Tasks, bei denen der Nutzer der `assignedUserId` ist.
+- Unterteilt in "Aktuell zu tun" (`ASSIGNED`) und "Abgeschlossen" (`DONE`).
+- Bei `ASSIGNED` Tasks: klickbares Detail oder direkter Button "Erledigt".
 
-optional: Success-Feedback (Toast)
+Detailansicht
+- Ergänzung um die passenden Action-Buttons je nach Kontext.
 
-Detailansicht (/microtasks/[id])
-Status OPEN:
-
-Button: „Übernehmen“
-
-Status ASSIGNED:
-
-Wenn assignedUserId === currentUser.id:
-
-Button: „Als erledigt markieren“
-
-Sonst:
-
-Hinweis: „Diese Aufgabe wurde bereits übernommen“
-
-Status DONE:
-
-Read-only Anzeige „Erledigt“
-
-UI-Zustände
-Loading (während Request)
-
-Error (z. B. Konflikt → kurze Meldung)
-
-Optimistic UI optional, aber nicht erforderlich
-
-Mobile App – Anforderungen (Flutter)
-MicroTaskListScreen
-OPEN Tasks zeigen Button „Übernehmen“
-
-Nach Übernahme:
-
-Liste neu laden
-
-Task verschwindet
-
-MicroTaskDetailScreen
-Gleiches Verhalten wie Web:
-
-OPEN → Übernehmen
-
-ASSIGNED + eigener User → Erledigen
-
-sonst read-only Hinweis
-
-UX-Hinweise
-Buttons während Request deaktivieren
-
-Kurzes visuelles Feedback (SnackBar/Toast)
+UI-Zustände & UX
+- Loading (während Request)
+- Error (z. B. Konflikt → kurze Meldung, falls jemand schneller war)
+- Optimistic UI nicht zwingend, simpler Lade-Spinner reicht.
 
 Definition of Done (DoD)
- POST /microtasks/:id/assign implementiert und getestet
-
- POST /microtasks/:id/complete implementiert und getestet
-
- Statusübergänge strikt serverseitig validiert
-
- Ownership-Regeln enforced (nur richtiger User darf abschließen)
-
- Org-Isolation enforced (X-Org-Id)
-
- Feed aktualisiert sich korrekt nach Übernahme
-
- Web UI: Übernehmen & Erledigen funktionieren
-
- Mobile UI: Übernehmen & Erledigen funktionieren
-
- Keine Business-Logik in Clients
-
- STYLEGUIDE eingehalten
-
- Kleine, nachvollziehbare Commits
-
- Umsetzung auf feature/architecture-setup
+  POST /microtasks/:id/offer/accept und /reject implementiert
+  POST /microtasks/:id/assign implementiert (für generische)
+  POST /microtasks/:id/complete implementiert
+  GET /me/microtasks Endpunkt existiert
+  Meine Aufgaben UI existiert (Web & Mobile, listet Assigned/Done)
+  Feed UI aktualisiert: Annehmen/Ablehnen/Übernehmen
+  Statusübergänge/Isolation strikt serverseitig validiert
+  Einfacher, lesbarer Code garantiert (CODESTYLE.md)
+  Umsetzung auf Branch `feature/architecture-setup`
 
 Hinweise für KI / Umsetzung
 Backend zuerst (Service + Tests), dann Web, dann Mobile

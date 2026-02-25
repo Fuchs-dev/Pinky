@@ -1,24 +1,25 @@
-# Ticket 0002 – MicroTask Feed (OPEN) + Detailansicht (Read-only) im aktiven Workspace
+# Ticket 0002 – MicroTask Feed (Offered vs. OPEN) + Detailansicht
 
 ## Kontext
 Nach Ticket 0001 existieren:
 - Auth (Token)
-- Workspace-Konzept (User hat mehrere Organisations-Memberships)
+- Workspace-Konzept inklusive Nutzerprofilen
 - Org-Kontext-Guard im Backend via `X-Org-Id`
 
-Jetzt soll der Nutzer im aktiven Workspace erstmals echten fachlichen Inhalt sehen:  
-einen Feed der offenen Micro-Tasks (`OPEN`) sowie eine Detailansicht pro Micro-Task.
+Jetzt soll der Nutzer im aktiven Workspace erstmals echten fachlichen Inhalt sehen: Das "Angebotssystem" von Pinky. Die Feed-Ansicht soll **klar trennen** zwischen MicroTasks, die dem Nutzer explizit (von einer KI oder manuell) angeboten wurden, und Aufgaben, die allgemein offen sind.
 
-Dieses Ticket ist bewusst **read-only** (keine Statusänderungen). Das „Übernehmen“ kommt in Ticket 0003.
+Zudem muss eine Detailansicht her, die **präzise Fragen beantwortet** (Was? Wann? Wo? Wie? Wer ist Ansprechpartner?), damit Ehrenamtliche sofort wissen, worauf sie sich einlassen.
+
+Dieses Ticket ist bewusst **read-only** (keine Statusänderungen). Das Option „Angebot annehmen“ kommt in Ticket 0003.
 
 ---
 
 ## Ziel
-1) Backend stellt MicroTasks im Kontext der aktiven Organisation bereit (gefiltert nach `OPEN`).  
+1) Backend stellt MicroTasks im Kontext der aktiven Organisation bereit.
 2) Nutzer kann im **Mobile Client** und in der **Web App**:
-   - eine Liste offener MicroTasks sehen
-   - einen MicroTask öffnen und Details sehen
-3) Alle Requests (außer Health/Auth) laufen mit:
+   - einen Feed einsehen, der in zwei Bereiche unterteilt ist: **"Für dich angeboten"** und **"Allgemein offen"**.
+   - einen MicroTask öffnen und dessen **präzise Details** einsehen (Was/Wann/Wo/Wie/Wer).
+3) Alle Requests laufen mit:
    - `Authorization: Bearer <token>`
    - `X-Org-Id: <activeOrgId>`
 4) Der Feed hat sinnvolle UI-States: Loading / Empty / Error.
@@ -28,19 +29,17 @@ Dieses Ticket ist bewusst **read-only** (keine Statusänderungen). Das „Übern
 ## Scope
 
 ### In Scope
-- Datenmodell für `Task` und `MicroTask` (Minimum)
+- Datenmodell für `Task` und **detaillierte** `MicroTask`
+- `Offer`-Logik im Modell (Relation: Welche MicroTask wird wem angeboten?)
 - Backend Endpunkte (Read):
-  - `GET /microtasks?status=OPEN`
+  - `GET /microtasks/feed` (Liefert Offered + Open getrennt oder markiert)
   - `GET /microtasks/:id`
-- Serverseitige Org-Isolation: MicroTasks nur aus `X-Org-Id` Organisation liefern
-- Minimaler Seed/Testdaten-Mechanismus für Dev/Staging, damit Feed nicht leer ist
-- Web UI:
-  - MicroTask Feed (Liste)
-  - MicroTask Detail (read-only)
-- Mobile UI:
-  - MicroTask Feed (Liste)
-  - MicroTask Detail (read-only)
-- Basic Tests (Backend): Filter, Org-Isolation, 404
+- Serverseitige Org-Isolation
+- Manuelles Seeding von Testdaten (damit Feed nicht leer ist)
+- Web & Mobile UI:
+  - Feed-Ansicht (Unterteilt in "Angebote" und "Offen")
+  - MicroTask Detail (Was/Wann/Wo/Wie/Wer)
+- Basic Tests (Backend)
 
 ### Out of Scope
 - MicroTask übernehmen/abschließen (kommt Ticket 0003)
@@ -53,11 +52,9 @@ Dieses Ticket ist bewusst **read-only** (keine Statusänderungen). Das „Übern
 ---
 
 ## Referenzen (verbindlich)
-- `/docs/PROJECT.md`
+- `/docs/PROJECT.md` (KI-Angebote, präzise Task-Struktur)
 - `/docs/ARCHITECTURE.md`
-- `/docs/DOMAIN.md` (Task, MicroTask, Statusmodell)
-- `/docs/DECISIONS.md` (Org-Kontext via Header)
-- `/docs/STYLEGUIDE.md`
+- `/docs/CODESTYLE.md`
 
 ---
 
@@ -86,68 +83,77 @@ Dieses Ticket ist bewusst **read-only** (keine Statusänderungen). Das „Übern
 - `description` (optional)
 - timestamps
 
-#### Entity: MicroTask
+#### Entity: MicroTask (Präzise Struktur!)
+Laut PROJECT.md müssen Tasks maximal klar sein.
 - `id` (uuid)
-- `organizationId` (uuid, FK) **(redundant zur schnelleren Filterung, aber ok/empfohlen)**
+- `organizationId` (uuid, FK)
 - `taskId` (uuid, FK)
-- `title` (string)
-- `description` (optional)
+- `title` (Was?)
+- `description_how` (Wie? Ausführungshilfe)
+- `location` (Wo?)
+- `contactPerson` (Wer ist Ansprechpartner?)
+- `timeframe` oder `dueAt` (Wann?)
 - `status` (`OPEN` | `ASSIGNED` | `DONE`)
-- `assignedUserId` (uuid, optional; in Ticket 0002 i. d. R. null)
-- `dueAt` (optional, ISO date)
+- `assignedUserId` (uuid, optional)
+- timestamps
+
+#### Entity: TaskOffer (Das "Angebot")
+Neu durch KI-Profil-Matching bedingt. Eine MicroTask kann einem Nutzer gezielt angeboten werden, bevor/während sie `OPEN` ist.
+- `id` (uuid)
+- `microTaskId` (FK)
+- `userId` (FK)
+- `status` (`SUGGESTED` | `REJECTED`)
 - timestamps
 
 **Constraints**
-- `MicroTask.organizationId` muss zur Task.organizationId passen (serverseitig erzwingen)
+- `MicroTask.organizationId` muss zur Task.organizationId passen
 - `status` default `OPEN`
 
 ---
 
 ### Endpunkte
 
-#### 1) `GET /microtasks`
-Query:
-- `status` optional (default `OPEN`)
+### Endpunkte
 
-Beispiel:
-- `GET /microtasks` → liefert `OPEN`
-- `GET /microtasks?status=OPEN` → liefert `OPEN`
-
+#### 1) `GET /microtasks/feed`
+Anpassung für den Feed.
+Sollte die Tasks so aufbereiten, dass der Client weiß, was ein Angebot ist und was generisch offen ist.
 Response (Beispiel, minimal):
 ```json
-[
-  {
-    "id": "uuid",
-    "title": "Getränke einkaufen",
-    "status": "OPEN",
-    "task": { "id": "uuid", "title": "Sommerfest organisieren" },
-    "dueAt": null
-  }
-]
-
+{
+  "offered": [
+    {
+      "id": "uuid",
+      "title": "Getränke am Freitag abholen",
+      "status": "OPEN",
+      "task": { "id": "uuid", "title": "Sommerfest" },
+      "timeframe": "Freitag ab 15 Uhr",
+      "location": "Getränkemarkt Süd"
+    }
+  ],
+  "open": [
+      // ... list of OPEN microtasks without explicit offer to this user
+  ]
+}
+```
 Regeln:
+- Liefert nur MicroTasks, deren `organizationId = X-Org-Id`.
+- "offered" sind Tasks, für die es einen `TaskOffer` für den aufrufenden `userId` gibt mit Status `SUGGESTED`.
+- "open" sind alle anderen.
 
-Liefert nur MicroTasks, deren organizationId = X-Org-Id
-
-Auth + Org-Guard Pflicht (aus Ticket 0001)
-
-Sortierung (Minimum):
-
-createdAt desc oder dueAt asc (einheitlich dokumentieren)
-
-2) GET /microtasks/:id
-
-Response (Beispiel, minimal):
-
+#### 2) `GET /microtasks/:id`
+Gibt das komplette, detaillierte Objekt zurück.
+```json
 {
   "id": "uuid",
-  "title": "Getränke einkaufen",
-  "description": "Wasser, Saft, Cola für ca. 20 Personen",
+  "title": "Getränke am Freitag abholen",
+  "description_how": "Transporter steht am Vereinsheim bereit. Leergut mitnehmen.",
+  "location": "Getränkemarkt Süd",
+  "contactPerson": "Maria (Vorstand)",
   "status": "OPEN",
-  "task": { "id": "uuid", "title": "Sommerfest organisieren" },
-  "dueAt": null,
-  "createdAt": "2026-01-25T10:00:00.000Z"
+  ...
 }
+```
 
 
 Regeln:
@@ -205,25 +211,16 @@ returns 404 if microtask belongs to different org
 Web App – Anforderungen (Next.js)
 Seiten / Routen (Vorschlag)
 
-/microtasks – Feed
+/feed – Feed (Helfer-Dashboard)
 
-/microtasks/[id] – Detail
+/feed/[id] – Detail
 
 Feed UI
+- Zeigt Liste unterteilt in zwei Segmente: **"Angebote für mich"** und **"Weitere offene Aufgaben"**
+- Jede Zeile/Karte zeigt Title, Task.Title und Wann/Wo.
 
-zeigt Liste aller OPEN MicroTasks im aktiven Workspace
-
-Jede Zeile/Karte zeigt:
-
-title
-
-task.title (Kontext)
-
-optional dueAt
-
-Status Badge (OPEN)
-
-Klick auf Eintrag → Detailansicht
+Detail UI
+- Klar strukturiert: Was? Wann? Wo? Wie? Ansprechpartner?
 
 States
 
@@ -276,27 +273,26 @@ setzt Bearer Token + X-Org-Id für Requests
 
 Definition of Done (DoD)
 
- Backend Datenmodell Task + MicroTask vorhanden (DB)
+ Backend Datenmodell Task, detaillierte MicroTask und TaskOffer vorhanden
 
- GET /microtasks liefert standardmäßig OPEN MicroTasks
+ GET /microtasks/feed liefert kombinierte Struktur (Offered + Open)
 
- GET /microtasks/:id liefert Details oder 404 (inkl. Org-Isolation)
+ GET /microtasks/:id liefert detaillierte Struktur (Isolation gewahrt)
 
- Org-Kontext via X-Org-Id wird strikt serverseitig enforced
+ Seed/Testdaten existieren, inkl. eines simulierten Angebots für den Dev-User
 
- Seed/Testdaten existieren, sodass Feed nach Start nicht leer ist
+ Backend Tests für Feed/Isolation/404 vorhanden und laufen
 
- Backend Tests für Filter/Isolation/404 vorhanden und laufen
+ Web/App UI Feed segmentiert korrekt und zeigt UI-States
 
- Web Feed + Detail funktionieren und zeigen UI-States korrekt
-
- Mobile Feed + Detail funktionieren und zeigen UI-States korrekt
+ Detailansicht gibt Antworten auf Was/Wann/Wo/Wie/Wer
 
  Keine Business-Logik in Clients
 
- STYLEGUIDE eingehalten, kleine Commits
+ STYLEGUIDE/Einfachheit eingehalten, kleine Commits
 
  Alles auf Branch feature/architecture-setup
+
 
 Hinweise für KI / Umsetzung
 

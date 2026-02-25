@@ -1,0 +1,135 @@
+TAP version 13
+# Subtest: GET /health returns ok
+ok 1 - GET /health returns ok
+  ---
+  duration_ms: 33.7482
+  ...
+# Subtest: Org guard returns 401 when missing token
+ok 2 - Org guard returns 401 when missing token
+  ---
+  duration_ms: 8.7476
+  ...
+# Subtest: Org guard returns 400 when missing org header
+ok 3 - Org guard returns 400 when missing org header
+  ---
+  duration_ms: 143.0578
+  ...
+# Subtest: Org guard returns 403 for non-member org
+ok 4 - Org guard returns 403 for non-member org
+  ---
+  duration_ms: 83.3601
+  ...
+# Subtest: Org guard allows member access
+ok 5 - Org guard allows member access
+  ---
+  duration_ms: 121.3076
+  ...
+# Subtest: GET /microtasks/feed returns offered and open tasks for active org
+ok 6 - GET /microtasks/feed returns offered and open tasks for active org
+  ---
+  duration_ms: 142.4376
+  ...
+# Subtest: GET /microtasks/feed enforces org membership
+ok 7 - GET /microtasks/feed enforces org membership
+  ---
+  duration_ms: 88.4608
+  ...
+# Subtest: GET /microtasks/:id hides other org microtasks
+ok 8 - GET /microtasks/:id hides other org microtasks
+  ---
+  duration_ms: 102.9667
+  ...
+# Subtest: GET /microtasks/:id returns 404 for missing id
+ok 9 - GET /microtasks/:id returns 404 for missing id
+  ---
+  duration_ms: 84.6984
+  ...
+# Subtest: POST /microtasks/:id/assign assigns an OPEN task
+ok 10 - POST /microtasks/:id/assign assigns an OPEN task
+  ---
+  duration_ms: 113.0152
+  ...
+# Subtest: POST /microtasks/:id/complete completes an ASSIGNED task
+ok 11 - POST /microtasks/:id/complete completes an ASSIGNED task
+  ---
+  duration_ms: 136.9937
+  ...
+# Subtest: POST /microtasks/:id/offer/accept works as expected
+ok 12 - POST /microtasks/:id/offer/accept works as expected
+  ---
+  duration_ms: 133.6539
+  ...
+# Subtest: GET /me/microtasks returns assigned tasks
+ok 13 - GET /me/microtasks returns assigned tasks
+  ---
+  duration_ms: 107.5495
+  ...
+# Subtest: POST /tasks creates a project if ADMIN
+ok 14 - POST /tasks creates a project if ADMIN
+  ---
+  duration_ms: 73.6497
+  ...
+# Subtest: POST /tasks fails if MEMBER
+ok 15 - POST /tasks fails if MEMBER
+  ---
+  duration_ms: 72.8008
+  ...
+# Subtest: POST /tasks/:taskId/microtasks creates a microtask if ADMIN
+ok 16 - POST /tasks/:taskId/microtasks creates a microtask if ADMIN
+  ---
+  duration_ms: 80.0583
+  ...
+# Subtest: GET /org/leaderboard returns sorted memberships
+ok 17 - GET /org/leaderboard returns sorted memberships
+  ---
+  duration_ms: 76.1873
+  ...
+# Subtest: Completing a task increments strikeScore when ENABLE_GAMIFICATION is true
+ok 18 - Completing a task increments strikeScore when ENABLE_GAMIFICATION is true
+  ---
+  duration_ms: 116.1304
+  ...
+# Subtest: POST /microtasks/:id/queue/join and /leave function correctly
+not ok 19 - POST /microtasks/:id/queue/join and /leave function correctly
+  ---
+  duration_ms: 112.2387
+  location: 'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js:406:25'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\api\dist\tests\api.test.js:419:22)
+    process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    async Test.run (node:internal/test_runner/test:688:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:420:7)
+  ...
+# Subtest: POST /microtasks/:id/unassign passes task to the next in queue
+not ok 20 - POST /microtasks/:id/unassign passes task to the next in queue
+  ---
+  duration_ms: 208.3078
+  location: 'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js:436:25'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\api\dist\tests\api.test.js:464:22)
+    process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    async Test.run (node:internal/test_runner/test:688:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:420:7)
+  ...

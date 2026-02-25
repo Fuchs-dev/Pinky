@@ -1,11 +1,13 @@
-# Ticket 0001 – Auth + Workspace (Multi-Organisation) + Org-Kontext (X-Org-Id)
+# Ticket 0001 – Auth + Workspace (Multi-Organisation) + Org-Kontext & Profil
 
 ## Kontext
 Pinky ist multi-organisationsfähig: Ein Nutzer kann in mehreren Vereinen/Organisationen aktiv sein.  
 Wie bei Slack soll der Nutzer in Web und Mobile den „Workspace“ (aktive Organisation) wechseln können.  
 Alle Datenzugriffe müssen strikt im Kontext der aktiven Organisation erfolgen. Die Business-Logik liegt im Backend.
 
-Dieses Ticket schafft die Grundlage für alle folgenden Features (Tasks/MicroTasks, Zuweisung, etc.).
+Zusätzlich legt dieses Ticket die Grundlage für spätere KI-Zuteilungen: Mitglieder benötigen ein Profil (Alter, Interessen, Qualifikationen, verfügbare Zeit), das im Backend erfasst wird.
+
+Dieses Ticket schafft die Grundlage für alle folgenden Features.
 
 ---
 
@@ -21,8 +23,8 @@ Dieses Ticket schafft die Grundlage für alle folgenden Features (Tasks/MicroTas
 ## Scope
 
 ### In Scope
-- Backend Auth Skeleton (Beta-geeignet) mit Token-basierter Auth (Access Token)
-- Datenmodell: User, Organization, Membership (inkl. Rolle)
+- Backend Auth Skeleton (Beta-geeignet) mit Token-basierter Auth
+- Datenmodell: User, Organization, Membership (inkl. Rolle und **Nutzerprofil-Felder**)
 - Endpunkte: Login, Me, Memberships
 - Org-Kontext Middleware: erzwingt `X-Org-Id` + Membership
 - Minimal UI in Web + Mobile:
@@ -42,11 +44,9 @@ Dieses Ticket schafft die Grundlage für alle folgenden Features (Tasks/MicroTas
 ---
 
 ## Referenzen (verbindlich)
-- `/docs/PROJECT.md`
+- `/docs/PROJECT.md` (Organization, Membership, Rollen, Nutzerprofile)
 - `/docs/ARCHITECTURE.md`
-- `/docs/DOMAIN.md` (Organization, Membership, Rollen, Multi-Org Workspace)
-- `/docs/DECISIONS.md` (Org-Kontext über Header `X-Org-Id`, REST, Stack)
-- `/docs/STYLEGUIDE.md` (Layering, Naming, KI-Regeln)
+- `/docs/CODESTYLE.md` (Layering, Naming, Einfachheit, KI-Regeln)
 
 ---
 
@@ -89,12 +89,18 @@ Dieses Ticket schafft die Grundlage für alle folgenden Features (Tasks/MicroTas
 - `name`
 - timestamps
 
-**Membership**
+**Membership (Mitgliedschaft + Profil)**
 - `id` (uuid)
 - `userId` (FK)
 - `organizationId` (FK)
 - `role` (`ADMIN` | `ORGANIZER` | `MEMBER`)
-- `status` (`ACTIVE` | `INACTIVE`) (optional für Beta)
+- `status` (`ACTIVE` | `INACTIVE`)
+- Profil-Metadaten für KI-Matching (z.B. als JSON-Spalte `profileInfo` oder flache Felder):
+  - `age` (int, optional)
+  - `department` (string, optional - z.B. "U13 Jungen")
+  - `interests` (string[], optional)
+  - `qualifications` (string[], optional - z.B. "Führerschein")
+  - `hoursPerWeek` (int, optional)
 - unique constraint: (`userId`, `organizationId`)
 - timestamps
 
@@ -133,12 +139,16 @@ Ziel: schnell funktionsfähig, ohne Sicherheits-Overkill.
 #### Memberships
 - `GET /me/memberships`
   - Requires Bearer Token
-  - Response: list of memberships incl. org info:
+  - Response: list of memberships incl. org info and profile:
 ```json
 [
   {
     "organization": { "id": "org-uuid", "name": "Floorball Kiel" },
-    "role": "MEMBER"
+    "role": "MEMBER",
+    "profileInfo": {
+       "department": "U13 Jungen",
+       "qualifications": ["Führerschein"]
+    }
   }
 ]
 
@@ -276,9 +286,9 @@ Definition of Done (DoD)
 
  Mobile App: Login + Workspace Switcher funktioniert und zeigt aktive Org
 
- Keine Secrets im Repo, .env.example vorhanden
+  Keine Secrets im Repo, .env.example vorhanden
 
- Struktur und Konventionen aus STYLEGUIDE eingehalten
+  Struktur und Konventionen aus CODESTYLE.md (max. Einfachheit) eingehalten
 
  Kleine, nachvollziehbare Commits; Änderungen sind auf feature/architecture-setup
 

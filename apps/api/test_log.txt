@@ -1,0 +1,20 @@
+
+> pinky-api@0.1.0 test
+> npm run build && node --test dist/tests
+
+
+> pinky-api@0.1.0 build
+> tsc -p tsconfig.json
+
+TAP version 13
+# Subtest: GET /health returns ok
+ok 1 - GET /health returns ok
+  ---
+  duration_ms: 43.1082
+  ...
+# Subtest: Org guard returns 401 when missing token
+ok 2 - Org guard returns 401 when missing token
+  ---
+  duration_ms: 8.7453
+  ...
+Batchvorgang abbrechen (J/N)? Batchvorgang abbrechen (J/N)? 
