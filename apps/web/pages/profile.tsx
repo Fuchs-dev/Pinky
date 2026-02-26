@@ -64,6 +64,38 @@ const ProfilePage: NextPage = () => {
             <h1>Mein Profil</h1>
             <p style={{ color: "#555" }}>{profile.email}</p>
 
+            {profile.calendarFeedToken && (
+                <div style={{
+                    marginTop: "1rem",
+                    padding: "1rem",
+                    backgroundColor: "#f4f4f9",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc"
+                }}>
+                    <strong style={{ display: "block", marginBottom: "0.5rem" }}>📅 Kalender-Abonnement (WebCal)</strong>
+                    <p style={{ fontSize: "0.85rem", color: "#555", marginBottom: "0.5rem" }}>
+                        Abonniere diesen Link in deiner Kalender-App (Apple, Google, Outlook), um deine zugewiesenen Aufgaben automatisch zu synchronisieren.
+                    </p>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <input
+                            readOnly
+                            value={`webcal://localhost:3001/calendar/${profile.calendarFeedToken}.ics`}
+                            style={{ flex: 1, padding: "0.5rem", fontSize: "0.85rem", backgroundColor: "#fff", border: "1px solid #bbb" }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => {
+                                navigator.clipboard.writeText(`webcal://localhost:3001/calendar/${profile.calendarFeedToken}.ics`);
+                                alert("Link kopiert!");
+                            }}
+                            style={{ padding: "0.5rem 1rem", cursor: "pointer", border: "1px solid #bbb", backgroundColor: "#e2e8f0" }}
+                        >
+                            Kopieren
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {feedback && (
                 <div style={{
                     padding: "1rem",

@@ -76,6 +76,7 @@ export interface UserProfile {
   hasDriversLicense?: boolean;
   helpContext?: string;
   weeklyTimeBudgetMinutes?: number;
+  calendarFeedToken?: string;
 }
 
 export const fetchMyProfile = async (token: string): Promise<UserProfile> => {

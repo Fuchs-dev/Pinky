@@ -24,23 +24,30 @@ export const splitTaskResultSchema = z.object({
  * @param anonymizedUsers Array of pseudonyms and context (e.g. [{ alias: "User_1", role: "Vorstand" }])
  * @returns Array of generated microTasks
  */
-export async function generateMicroTasksFromPrompt(prompt: string, anonymizedUsers: { alias: string, role: string }[]) {
+export async function generateMicroTasksFromPrompt(
+    prompt: string,
+    anonymizedUsers: { alias: string, role: string, weeklyTimeBudgetMinutes?: number, completedTimeThisMonth?: number }[],
+    orgAvgTimeThisMonth: number = 0
+) {
     const usersContext = anonymizedUsers.length > 0
-        ? `Verfügbare Personen (verwendet ausschließlich den 'alias' für Zuweisungsvorschläge in suggestedAssigneeAlias):\n` + anonymizedUsers.map(u => `- Alias: ${u.alias} (Rolle im Verein: ${u.role})`).join('\n')
+        ? `Verfügbare Personen (verwendet ausschließlich den 'alias' für Zuweisungsvorschläge in suggestedAssigneeAlias):\n` + anonymizedUsers.map(u => `- Alias: ${u.alias} (Rolle: ${u.role}, Wöchentliches Zeitbudget: ${u.weeklyTimeBudgetMinutes} Min, In diesem Monat bereits geleistete Zeit: ${u.completedTimeThisMonth} Min)`).join('\n')
         : `Keine spezifischen Personen verfügbar. Setze suggestedAssigneeAlias auf null.`;
 
     const systemPrompt = `Du bist ein hochintelligenter Organisations-Assistent für gemeinnützige Vereine.
 Deine Aufgabe ist es, große Vorhaben in handhabbare, kleine und motivierende 'MicroTasks' zu zerlegen.
 Jede Teilaufgabe soll konkret und machbar erscheinen (Impact-Fokussiert!).
 
-WICHTIG ZUR ZUWEISUNG:
+WICHTIG ZUR ZUWEISUNG UND BELASTUNGS-PRÜFUNG:
+Der Durchschnitt der geleisteten Arbeitszeit in der gesamten Organisation liegt in diesem Monat bei ${orgAvgTimeThisMonth} Minuten pro Mitglied.
+
 ${usersContext}
 
 Regeln:
 1. Brich das vom Nutzer genannte Projekt in 3-8 extrem spezifische Teilaufgaben herunter.
 2. Wenn das Projekt bereits eine Teilaufgabe ist, verfeinere sie.
 3. Formuliere motivierend und nutze den Kontext der Personen sinnvoll, falls eine Rolle (wie 'Vorstand') besonders gut zu einer Aufgabe passt.
-4. Du darfst nur generieren, keine Datenbank-Mutationen ausführen.`;
+4. **WICHTIG**: Beachte das wöchentliche Zeitbudget der Personen UND wie viel Zeit sie diesen Monat schon investiert haben. Überlaste einzelne Personen nicht signifikant im Vergleich zur restlichen Organisation (${orgAvgTimeThisMonth} Min Ø) oder ihrem eigenen Limit. Setze \`suggestedAssigneeAlias\` auf \`null\`, wenn alle überlastet sind.
+5. Du darfst nur generieren, keine Datenbank-Mutationen ausführen.`;
 
     if (!process.env.OPENAI_API_KEY) {
         console.warn("OPENAI_API_KEY is not set. Using mock AI data.");

@@ -1,7 +1,8 @@
 import { randomUUID } from "crypto";
-import { eq, and, desc, or } from "drizzle-orm";
+import { eq, and, desc, or, gte, lt } from "drizzle-orm";
 import { db } from "./db/index";
 import { users, organizations, memberships, tasks, microTasks, taskOffers, queueIntents } from "./db/schema";
+import { appEvents } from "./events";
 
 export type MembershipRole = "ADMIN" | "ORGANIZER" | "MEMBER";
 export type MembershipStatus = "ACTIVE" | "INACTIVE";
@@ -20,7 +21,8 @@ export const createUser = async (email: string, displayName?: string): Promise<U
   const [user] = await db.insert(users).values({
     id: randomUUID(),
     email,
-    displayName
+    displayName,
+    calendarFeedToken: randomUUID()
   }).returning();
   return user;
 };
@@ -72,7 +74,8 @@ export const listMembershipsForOrganization = async (organizationId: string) => 
     id: memberships.id,
     role: memberships.role,
     userId: users.id,
-    displayName: users.displayName
+    displayName: users.displayName,
+    weeklyTimeBudgetMinutes: users.weeklyTimeBudgetMinutes
   }).from(memberships)
     .innerJoin(users, eq(memberships.userId, users.id))
     .where(eq(memberships.organizationId, organizationId));
@@ -287,13 +290,7 @@ export const leaveQueue = async (microTaskId: string, userId: string): Promise<v
     );
 };
 
-export const unassignTask = async (microTaskId: string, userId: string): Promise<MicroTask> => {
-  const microTask = await getMicroTaskById(microTaskId);
-  if (!microTask) throw new Error("MicroTask not found");
-  if (microTask.status !== "ASSIGNED") throw new Error("MicroTask is not ASSIGNED");
-  if (microTask.assignedUserId !== userId) throw new Error("Not assigned to user");
-
-  // Logic: find next in queue
+export const promoteNextInQueue = async (microTaskId: string): Promise<MicroTask> => {
   const [nextInQueue] = await db.select().from(queueIntents)
     .where(
       and(eq(queueIntents.microTaskId, microTaskId), eq(queueIntents.status, "QUEUED"))
@@ -302,23 +299,85 @@ export const unassignTask = async (microTaskId: string, userId: string): Promise
     .limit(1);
 
   if (nextInQueue) {
-    // Auto-Assign to next
     const [updatedIntent] = await db.update(queueIntents)
       .set({ status: "NOTIFIED", updatedAt: new Date() })
       .where(eq(queueIntents.id, nextInQueue.id)).returning();
 
     const [updatedTask] = await db.update(microTasks)
-      .set({ assignedUserId: nextInQueue.userId, updatedAt: new Date() })
+      .set({ status: "ASSIGNED", assignedUserId: nextInQueue.userId, updatedAt: new Date() })
       .where(eq(microTasks.id, microTaskId)).returning();
+
+    appEvents.emit("pushNotification", {
+      userId: nextInQueue.userId,
+      event: "TASK_ASSIGNED_FROM_QUEUE",
+      payload: {
+        microTaskId: updatedTask.id,
+        title: updatedTask.title,
+        message: "Eine Aufgabe aus deiner Warteschlange wurde dir zugewiesen!"
+      }
+    });
 
     return updatedTask;
   } else {
-    // Return to OPEN pool
     const [updatedTask] = await db.update(microTasks)
       .set({ status: "OPEN", assignedUserId: null, updatedAt: new Date() })
       .where(eq(microTasks.id, microTaskId)).returning();
 
+    appEvents.emit("pushNotificationRole", {
+      organizationId: updatedTask.organizationId,
+      role: "ORGANIZER",
+      event: "TASK_QUEUE_EMPTY",
+      payload: {
+        microTaskId: updatedTask.id,
+        title: updatedTask.title,
+        message: "Eine Aufgabe wurde abgesagt und die Warteschlange ist leer!"
+      }
+    });
+
     return updatedTask;
+  }
+};
+
+export const unassignTask = async (microTaskId: string, userId: string): Promise<MicroTask> => {
+  const microTask = await getMicroTaskById(microTaskId);
+  if (!microTask) throw new Error("MicroTask not found");
+  if (microTask.status !== "ASSIGNED") throw new Error("MicroTask is not ASSIGNED");
+  if (microTask.assignedUserId !== userId) throw new Error("Not assigned to user");
+
+  // Also remove the current user's NOTIFIED queue intent if they had one
+  await db.update(queueIntents)
+    .set({ status: "WITHDRAWN", updatedAt: new Date() })
+    .where(
+      and(
+        eq(queueIntents.microTaskId, microTaskId),
+        eq(queueIntents.userId, userId),
+        eq(queueIntents.status, "NOTIFIED")
+      )
+    );
+
+  return await promoteNextInQueue(microTaskId);
+};
+
+export const checkQueueTimeouts = async () => {
+  const timeoutThreshold = new Date(Date.now() - 15 * 60 * 1000);
+
+  const expiredIntents = await db.select().from(queueIntents)
+    .where(
+      and(
+        eq(queueIntents.status, "NOTIFIED"),
+        lt(queueIntents.updatedAt, timeoutThreshold)
+      )
+    );
+
+  for (const intent of expiredIntents) {
+    if (intent.status === "NOTIFIED") {
+      await db.update(queueIntents)
+        .set({ status: "EXPIRED", updatedAt: new Date() })
+        .where(eq(queueIntents.id, intent.id));
+
+      // Auto-promote the next user
+      await promoteNextInQueue(intent.microTaskId);
+    }
   }
 };
 
@@ -404,4 +463,75 @@ export const ensureSeedMicroTasks = async (organizationId: string, seedUserId?: 
     estimatedDuration: "ca. 30 Minuten",
     dueAt: null
   });
+};
+
+export const parseDurationMinutes = (durationStr: string | null): number => {
+  if (!durationStr) return 0;
+  const lower = durationStr.toLowerCase();
+  const match = lower.match(/(\d+)/);
+  if (!match) return 0;
+  const val = parseInt(match[1], 10);
+  if (lower.includes("stunde") || lower.includes("h")) return val * 60;
+  return val;
+};
+
+export const getUserCompletedTaskTimeThisMonth = async (userId: string, organizationId: string): Promise<number> => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const tasks = await db.select().from(microTasks).where(
+    and(
+      eq(microTasks.assignedUserId, userId),
+      eq(microTasks.organizationId, organizationId),
+      eq(microTasks.status, "DONE"),
+      gte(microTasks.updatedAt, startOfMonth)
+    )
+  );
+
+  return tasks.reduce((sum, t) => sum + parseDurationMinutes(t.estimatedDuration), 0);
+};
+
+export const getOrganizationAverageCompletedTimeThisMonth = async (organizationId: string): Promise<number> => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const tasks = await db.select().from(microTasks).where(
+    and(
+      eq(microTasks.organizationId, organizationId),
+      eq(microTasks.status, "DONE"),
+      gte(microTasks.updatedAt, startOfMonth)
+    )
+  );
+
+  const totalMinutes = tasks.reduce((sum, t) => sum + parseDurationMinutes(t.estimatedDuration), 0);
+
+  const members = await listMembershipsForOrganization(organizationId);
+  const activeMembersCount = members.length;
+  if (activeMembersCount === 0) return 0;
+
+  return Math.round(totalMinutes / activeMembersCount);
+};
+
+export const ensureCalendarToken = async (userId: string): Promise<string> => {
+  const user = await getUserById(userId);
+  if (!user) throw new Error("User not found");
+  if (user.calendarFeedToken) return user.calendarFeedToken;
+
+  const newToken = randomUUID();
+  await db.update(users)
+    .set({ calendarFeedToken: newToken, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+  return newToken;
+};
+
+export const getUserByCalendarToken = async (token: string): Promise<User | undefined> => {
+  const [user] = await db.select().from(users).where(eq(users.calendarFeedToken, token));
+  return user;
+};
+
+export const getAssignedMicroTasksForUserGlobally = async (userId: string): Promise<MicroTask[]> => {
+  return db.select().from(microTasks).where(
+    and(
+      eq(microTasks.assignedUserId, userId),
+      eq(microTasks.status, "ASSIGNED")
+    )
+  );
 };

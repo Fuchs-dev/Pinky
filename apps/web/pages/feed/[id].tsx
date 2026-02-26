@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { fetchMicroTaskDetail, MicroTaskDetail, joinQueue, leaveQueue } from "../../lib/api";
+import { CalendarExportDropdown } from "../../components/CalendarExportDropdown";
 
 const MicroTaskDetailPage: NextPage = () => {
   const router = useRouter();
@@ -66,6 +67,32 @@ const MicroTaskDetailPage: NextPage = () => {
     }
   };
 
+  const handleDownloadIcs = async () => {
+    if (!token || !orgId || typeof id !== "string") return;
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+      const response = await fetch(`${API_BASE_URL}/microtasks/${id}/download.ics`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-Org-Id": orgId
+        }
+      });
+      if (!response.ok) throw new Error("Fehler beim Herunterladen der Kalenderdatei");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `task-${id}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      alert((err as Error).message);
+    }
+  };
+
   useEffect(() => {
     if (typeof id === "string") {
       loadDetail(id);
@@ -96,11 +123,13 @@ const MicroTaskDetailPage: NextPage = () => {
       {!loading && !error && !microTask ? <p>Keine Aufgabe gefunden.</p> : null}
       {!loading && !error && microTask ? (
         <section style={{ border: "1px solid #ddd", padding: "1.5rem", borderRadius: "8px", backgroundColor: "#fafafa" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
             <h2 style={{ marginTop: 0 }}>{microTask.title}</h2>
-            <span style={{ fontWeight: "bold", fontSize: "1.2rem", padding: "4px 12px", backgroundColor: "#005f73", color: "white", borderRadius: "16px" }}>
-              {microTask.rewardPoints} 🪙 Belohnung
-            </span>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <span style={{ fontWeight: "bold", fontSize: "1.2rem", padding: "4px 12px", backgroundColor: "#005f73", color: "white", borderRadius: "16px" }}>
+                {microTask.rewardPoints} 🪙 Belohnung
+              </span>
+            </div>
           </div>
           <div style={{ display: "grid", gap: "0.5rem", marginTop: "1rem" }}>
             <p style={{ margin: 0 }}>
@@ -110,9 +139,7 @@ const MicroTaskDetailPage: NextPage = () => {
               <strong>Status:</strong> {microTask.status}
             </p>
             {microTask.dueAt ? (
-              <p style={{ margin: 0 }}>
-                <strong>Wann:</strong> {new Date(microTask.dueAt).toLocaleDateString()}
-              </p>
+              <CalendarExportDropdown microTask={microTask} onDownloadIcs={handleDownloadIcs} />
             ) : null}
             {microTask.location ? (
               <p style={{ margin: 0 }}>

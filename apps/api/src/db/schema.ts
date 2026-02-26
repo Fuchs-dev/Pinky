@@ -13,6 +13,7 @@ export const users = pgTable("users", {
     hasDriversLicense: boolean("has_drivers_license"),
     helpContext: text("help_context"),
     weeklyTimeBudgetMinutes: integer("weekly_time_budget_minutes").default(0),
+    calendarFeedToken: varchar("calendar_feed_token", { length: 255 }).unique(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull()
 });

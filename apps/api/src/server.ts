@@ -26,9 +26,44 @@ import {
   leaveQueue,
   unassignTask,
   listMembershipsForOrganization,
-  updateUserProfile
+  updateUserProfile,
+  getUserCompletedTaskTimeThisMonth,
+  getOrganizationAverageCompletedTimeThisMonth,
+  ensureCalendarToken,
+  getUserByCalendarToken,
+  getAssignedMicroTasksForUserGlobally,
+  parseDurationMinutes,
+  checkQueueTimeouts
 } from "./store";
 import { generateMicroTasksFromPrompt } from "./ai";
+import { appEvents } from "./events";
+
+const sseConnections = new Map<string, Set<ServerResponse>>();
+
+appEvents.on("pushNotification", ({ userId, event, payload }) => {
+  const userConns = sseConnections.get(userId);
+  if (userConns) {
+    const dataString = `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
+    userConns.forEach((res) => res.write(dataString));
+  }
+});
+
+appEvents.on("pushNotificationRole", async ({ organizationId, role, event, payload }) => {
+  const members = await listMembershipsForOrganization(organizationId);
+  const targetUsers = members.filter(m => m.role === role);
+  const dataString = `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
+
+  targetUsers.forEach(u => {
+    const userConns = sseConnections.get(u.userId);
+    if (userConns) {
+      userConns.forEach(res => res.write(dataString));
+    }
+  });
+});
+
+setInterval(() => {
+  checkQueueTimeouts().catch(console.error);
+}, 60 * 1000);
 
 const loginBodySchema = z.object({
   email: z.string().email(),
@@ -101,6 +136,37 @@ const errorResponse = (
   code?: string
 ) => jsonResponse(response, statusCode, { message, code });
 
+const formatICSDate = (date: Date): string => {
+  return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+};
+
+const generateICS = (microTasks: any[]): string => {
+  const events = microTasks.map((t) => {
+    let dtstart = "";
+    let dtend = "";
+    if (t.dueAt) {
+      const start = new Date(t.dueAt);
+      const minutes = t.estimatedDuration ? parseDurationMinutes(t.estimatedDuration) : 60;
+      const end = new Date(start.getTime() + (minutes || 60) * 60000);
+      dtstart = `DTSTART:${formatICSDate(start)}\n`;
+      dtend = `DTEND:${formatICSDate(end)}\n`;
+    } else {
+      const start = new Date();
+      start.setHours(start.getHours() + 24);
+      const end = new Date(start.getTime() + 60 * 60000);
+      dtstart = `DTSTART:${formatICSDate(start)}\n`;
+      dtend = `DTEND:${formatICSDate(end)}\n`;
+    }
+
+    const description = (t.descriptionHow || t.title).replace(/\n/g, "\\n");
+    const locationStr = t.location ? `LOCATION:${t.location}\n` : "";
+
+    return `BEGIN:VEVENT\nUID:${t.id}\nDTSTAMP:${formatICSDate(new Date())}\n${dtstart}${dtend}SUMMARY:${t.title}\nDESCRIPTION:${description}\n${locationStr}BEGIN:VALARM\nTRIGGER:-PT1H\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\nEND:VEVENT`;
+  });
+
+  return `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Pinky//DE\n${events.join("\n")}\nEND:VCALENDAR`;
+};
+
 const parseJsonBody = async (request: IncomingMessage) => {
   const chunks: any[] = [];
   for await (const chunk of request) {
@@ -116,7 +182,7 @@ const parseJsonBody = async (request: IncomingMessage) => {
 };
 
 const isPublicPath = (pathname: string) =>
-  pathname === "/health" || pathname.startsWith("/auth/");
+  pathname === "/health" || pathname.startsWith("/auth/") || pathname.startsWith("/calendar/");
 
 const isOrgGuardedPath = (pathname: string) =>
   !isPublicPath(pathname) &&
@@ -126,14 +192,18 @@ const isOrgGuardedPath = (pathname: string) =>
 
 const extractBearerToken = (request: IncomingMessage) => {
   const header = request.headers.authorization;
-  if (!header) {
-    return null;
+  if (header) {
+    const [type, token] = header.split(" ");
+    if (type === "Bearer" && token) {
+      return token;
+    }
   }
-  const [type, token] = header.split(" ");
-  if (type !== "Bearer" || !token) {
-    return null;
+  const url = new URL(request.url ?? "/", "http://localhost");
+  const tokenQuery = url.searchParams.get("token");
+  if (tokenQuery) {
+    return tokenQuery;
   }
-  return token;
+  return null;
 };
 
 const authenticateRequest = async (request: IncomingMessage) => {
@@ -207,7 +277,8 @@ const handleMe = async (response: ServerResponse, userId: string) => {
     qualifications: user.qualifications,
     hasDriversLicense: user.hasDriversLicense,
     helpContext: user.helpContext,
-    weeklyTimeBudgetMinutes: user.weeklyTimeBudgetMinutes
+    weeklyTimeBudgetMinutes: user.weeklyTimeBudgetMinutes,
+    calendarFeedToken: await ensureCalendarToken(user.id)
   });
 };
 
@@ -493,16 +564,22 @@ const handleSplitTask = async (request: IncomingMessage, response: ServerRespons
 
   try {
     const rawMembers = await listMembershipsForOrganization(orgId);
+    const orgAvgTimeThisMonth = await getOrganizationAverageCompletedTimeThisMonth(orgId);
 
     // Anonymize/Pseudonymize data for the AI
-    const anonymizedUsers = rawMembers.map((m, i) => ({
-      alias: `Person_${i + 1}`,
-      role: m.role,
-      originalId: m.userId
+    const anonymizedUsers = await Promise.all(rawMembers.map(async (m, i) => {
+      const completedTimeThisMonth = await getUserCompletedTaskTimeThisMonth(m.userId, orgId);
+      return {
+        alias: `Person_${i + 1}`,
+        role: m.role,
+        weeklyTimeBudgetMinutes: m.weeklyTimeBudgetMinutes ?? 0,
+        completedTimeThisMonth,
+        originalId: m.userId
+      };
     }));
 
     // Generate tasks via LLM
-    const generatedTasks = await generateMicroTasksFromPrompt(parsed.data.prompt, anonymizedUsers);
+    const generatedTasks = await generateMicroTasksFromPrompt(parsed.data.prompt, anonymizedUsers, orgAvgTimeThisMonth);
 
     // Map aliases back to real IDs
     const mappedTasks = generatedTasks.map((t: any) => {
@@ -608,6 +685,23 @@ export const createApiServer = () =>
         return await handleLogin(request, response);
       }
 
+      if (method === "GET" && pathname.startsWith("/calendar/") && pathname.endsWith(".ics")) {
+        const token = pathname.replace("/calendar/", "").replace(".ics", "");
+        const user = await getUserByCalendarToken(token);
+        if (!user) {
+          return errorResponse(response, 404, "Invalid calendar feed token", "NOT_FOUND");
+        }
+        const tasks = await getAssignedMicroTasksForUserGlobally(user.id);
+        const icsContent = generateICS(tasks);
+        response.writeHead(200, {
+          "Content-Type": "text/calendar",
+          "Content-Length": Buffer.byteLength(icsContent).toString(),
+          ...corsHeaders
+        });
+        response.end(icsContent);
+        return;
+      }
+
       if (!isPublicPath(pathname)) {
         const user = await authenticateRequest(request);
         if (!user) {
@@ -656,6 +750,31 @@ export const createApiServer = () =>
             );
           }
 
+          if (method === "GET" && pathname === "/notifications/stream") {
+            response.writeHead(200, {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache",
+              "Connection": "keep-alive",
+              ...corsHeaders
+            });
+            response.write(`data: {"type": "connected"}\n\n`);
+
+            let userConns = sseConnections.get(user.id);
+            if (!userConns) {
+              userConns = new Set();
+              sseConnections.set(user.id, userConns);
+            }
+            userConns.add(response);
+
+            request.on("close", () => {
+              userConns.delete(response);
+              if (userConns.size === 0) {
+                sseConnections.delete(user.id);
+              }
+            });
+            return;
+          }
+
           if (method === "GET" && pathname === "/microtasks/feed") {
             return await handleMicroTaskFeed(
               response,
@@ -670,6 +789,25 @@ export const createApiServer = () =>
               orgContext.orgId,
               user.id
             );
+          }
+
+          if (method === "GET" && pathname.startsWith("/microtasks/") && pathname.endsWith("/download.ics")) {
+            const parts = pathname.split("/");
+            if (parts.length === 4) {
+              const microTaskId = parts[2];
+              const microTask = await getMicroTaskById(microTaskId);
+              if (!microTask || microTask.organizationId !== orgContext.orgId) {
+                return errorResponse(response, 404, "MicroTask not found", "NOT_FOUND");
+              }
+              const icsContent = generateICS([microTask]);
+              response.writeHead(200, {
+                "Content-Type": "text/calendar",
+                "Content-Length": Buffer.byteLength(icsContent).toString(),
+                ...corsHeaders
+              });
+              response.end(icsContent);
+              return;
+            }
           }
 
           if (method === "GET" && pathname.startsWith("/microtasks/")) {
