@@ -1,0 +1,152 @@
+
+> pinky-api@0.1.0 test
+> npm run build && node --test dist/tests
+
+
+> pinky-api@0.1.0 build
+> tsc -p tsconfig.json
+
+TAP version 13
+# Subtest: GET /health returns ok
+ok 1 - GET /health returns ok
+  ---
+  duration_ms: 131.4662
+  ...
+# Subtest: Org guard returns 401 when missing token
+ok 2 - Org guard returns 401 when missing token
+  ---
+  duration_ms: 21.3766
+  ...
+# Subtest: Org guard returns 400 when missing org header
+ok 3 - Org guard returns 400 when missing org header
+  ---
+  duration_ms: 234.7468
+  ...
+# Subtest: Org guard returns 403 for non-member org
+ok 4 - Org guard returns 403 for non-member org
+  ---
+  duration_ms: 60.9028
+  ...
+# Subtest: Org guard allows member access
+ok 5 - Org guard allows member access
+  ---
+  duration_ms: 114.1745
+  ...
+# Subtest: GET /microtasks/feed returns offered and open tasks for active org
+ok 6 - GET /microtasks/feed returns offered and open tasks for active org
+  ---
+  duration_ms: 140.1505
+  ...
+# Subtest: GET /microtasks/feed enforces org membership
+ok 7 - GET /microtasks/feed enforces org membership
+  ---
+  duration_ms: 52.9563
+  ...
+# Subtest: GET /microtasks/:id hides other org microtasks
+ok 8 - GET /microtasks/:id hides other org microtasks
+  ---
+  duration_ms: 137.2317
+  ...
+# Subtest: GET /microtasks/:id returns 404 for missing id
+ok 9 - GET /microtasks/:id returns 404 for missing id
+  ---
+  duration_ms: 69.3648
+  ...
+# Subtest: POST /microtasks/:id/assign assigns an OPEN task
+not ok 10 - POST /microtasks/:id/assign assigns an OPEN task
+  ---
+  duration_ms: 111.7566
+  location: 'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js:185:25'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    409 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\api\dist\tests\api.test.js:198:22)
+    process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    async Test.run (node:internal/test_runner/test:688:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:420:7)
+  ...
+# Subtest: POST /microtasks/:id/complete completes an ASSIGNED task
+not ok 11 - POST /microtasks/:id/complete completes an ASSIGNED task
+  ---
+  duration_ms: 86.8031
+  location: 'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js:209:25'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'id')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\api\dist\tests\api.test.js:218:45)
+    process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    async Test.run (node:internal/test_runner/test:688:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:420:7)
+  ...
+# Subtest: POST /microtasks/:id/offer/accept works as expected
+not ok 12 - POST /microtasks/:id/offer/accept works as expected
+  ---
+  duration_ms: 109.4402
+  location: 'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js:238:25'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'id')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\api\dist\tests\api.test.js:246:44)
+    process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    async Test.run (node:internal/test_runner/test:688:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:420:7)
+  ...
+# Subtest: GET /me/microtasks returns assigned tasks
+ok 13 - GET /me/microtasks returns assigned tasks
+  ---
+  duration_ms: 137.2208
+  ...
+# Subtest: POST /tasks creates a project if ADMIN
+ok 14 - POST /tasks creates a project if ADMIN
+  ---
+  duration_ms: 83.1867
+  ...
+# Subtest: POST /tasks fails if MEMBER
+ok 15 - POST /tasks fails if MEMBER
+  ---
+  duration_ms: 61.8689
+  ...
+# Subtest: POST /tasks/:taskId/microtasks creates a microtask if ADMIN
+ok 16 - POST /tasks/:taskId/microtasks creates a microtask if ADMIN
+  ---
+  duration_ms: 100.179
+  ...
+# Subtest: GET /org/leaderboard returns sorted memberships
+ok 17 - GET /org/leaderboard returns sorted memberships
+  ---
+  duration_ms: 69.4467
+  ...
+# Subtest: Completing a task increments strikeScore when ENABLE_GAMIFICATION is true
+ok 18 - Completing a task increments strikeScore when ENABLE_GAMIFICATION is true
+  ---
+  duration_ms: 176.0254
+  ...
+# Subtest: POST /microtasks/:id/queue/join and /leave function correctly
+ok 19 - POST /microtasks/:id/queue/join and /leave function correctly
+  ---
+  duration_ms: 147.0563
+  ...
+# Subtest: POST /microtasks/:id/unassign passes task to the next in queue
+ok 20 - POST /microtasks/:id/unassign passes task to the next in queue
+  ---
+  duration_ms: 168.7631
+  ...
+# OPENAI_API_KEY is not set. Using mock AI data.
+# Subtest: POST /ai/split-task returns generated microtasks (with mock fallback)
+ok 21 - POST /ai/split-task returns generated microtasks (with mock fallback)
+  ---
+  duration_ms: 173.9979
+  ...

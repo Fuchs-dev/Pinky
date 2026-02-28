@@ -1,0 +1,38 @@
+TAP version 13
+# node:internal/modules/cjs/loader:599
+#       throw e;
+#       ^
+# Error [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './v4' is not defined by "exports" in C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\node_modules\\zod\\package.json
+#     at exportsNotFound (node:internal/modules/esm/resolve:304:10)
+#     at packageExportsResolve (node:internal/modules/esm/resolve:651:9)
+#     at resolveExports (node:internal/modules/cjs/loader:592:36)
+#     at Module._findPath (node:internal/modules/cjs/loader:669:31)
+#     at Module._resolveFilename (node:internal/modules/cjs/loader:1131:27)
+#     at Module._load (node:internal/modules/cjs/loader:986:27)
+#     at Module.require (node:internal/modules/cjs/loader:1233:19)
+#     at require (node:internal/modules/helpers:179:18)
+#     at Object.<anonymous> (C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\node_modules\\@ai-sdk\\provider-utils\\dist\\index.js:859:18)
+#     at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+#   code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'
+# }
+# Node.js v20.14.0
+# Subtest: C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js
+not ok 1 - C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js
+  ---
+  duration_ms: 272.5309
+  location: 'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\api\\dist\\tests\\api.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 278.1596

@@ -1,0 +1,691 @@
+
+> pinky-web@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 4s
+ ○ Compiling /feed ...
+ ✓ Compiled /feed in 1169ms (332 modules)
+ GET /feed 200 in 1499ms
+ GET /feed 200 in 38ms
+ ✓ Compiled / in 479ms (336 modules)
+ GET / 200 in 603ms
+ ✓ Compiled /workspace in 435ms (340 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 826ms (344 modules)
+ GET /login 200 in 1056ms
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 628ms (348 modules)
+ GET /feed 200 in 168ms
+ ○ Compiling /feed/[id] ...
+ ✓ Compiled /feed/[id] in 648ms (352 modules)
+ ⨯ ./lib/api.ts
+Error: 
+  [31mx[0m Expected ',', got 'if'
+     ,-[[36;1;4mC:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\lib\api.ts[0m:136:1]
+ [2m136[0m |   const response = await fetch(`${API_BASE_URL}/microtasks/${microTaskId}/complete`, {
+ [2m137[0m |     method: "POST",
+ [2m138[0m |     headers: authHeaders(token, orgId)
+ [2m139[0m |   if(!response.ok) throw new Error("Unable to complete task");
+     : [31;1m  ^^[0m
+ [2m140[0m | };
+ [2m141[0m | 
+ [2m141[0m | export const generateTaskSuggestions = async (token: string, orgId: string, prompt: string): Promise<any> => {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./lib/api.ts
+ ⨯ ./lib/api.ts
+Error: 
+  [31mx[0m Expected ',', got 'if'
+     ,-[[36;1;4mC:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\lib\api.ts[0m:136:1]
+ [2m136[0m |   const response = await fetch(`${API_BASE_URL}/microtasks/${microTaskId}/complete`, {
+ [2m137[0m |     method: "POST",
+ [2m138[0m |     headers: authHeaders(token, orgId)
+ [2m139[0m |   if(!response.ok) throw new Error("Unable to complete task");
+     : [31;1m  ^^[0m
+ [2m140[0m | };
+ [2m141[0m | 
+ [2m141[0m | export const generateTaskSuggestions = async (token: string, orgId: string, prompt: string): Promise<any> => {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./lib/api.ts
+ ✓ Compiled in 979ms (338 modules)
+ ✓ Compiled /login in 331ms (342 modules)
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 566ms (344 modules)
+ GET /login 500 in 1440ms
+ GET /_next/static/chunks/main.js 404 in 74ms
+ GET /_next/static/chunks/react-refresh.js 404 in 70ms
+ GET /_next/static/chunks/pages/_app.js 404 in 66ms
+ GET /_next/static/chunks/pages/_error.js 404 in 62ms
+ ✓ Compiled / in 255ms (348 modules)
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\index.js:133:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\index.js:136:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 313ms
+ GET /_next/static/chunks/main.js 404 in 46ms
+ GET /_next/static/chunks/react-refresh.js 404 in 44ms
+ GET /_next/static/chunks/pages/_app.js 404 in 42ms
+ GET /_next/static/chunks/pages/_error.js 404 in 16ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 26ms
+ GET /_next/static/chunks/main.js 404 in 41ms
+ GET /_next/static/chunks/react-refresh.js 404 in 38ms
+ GET /_next/static/chunks/pages/_app.js 404 in 35ms
+ GET /_next/static/chunks/pages/_error.js 404 in 16ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 27ms
+ GET /_next/static/chunks/main.js 404 in 41ms
+ GET /_next/static/chunks/react-refresh.js 404 in 36ms
+ GET /_next/static/chunks/pages/_app.js 404 in 32ms
+ GET /_next/static/chunks/pages/_error.js 404 in 15ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\index.js:133:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\index.js:136:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 30ms
+ GET /_next/static/chunks/main.js 404 in 42ms
+ GET /_next/static/chunks/react-refresh.js 404 in 35ms
+ GET /_next/static/chunks/pages/_app.js 404 in 33ms
+ GET /_next/static/chunks/pages/_error.js 404 in 16ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 29ms
+ GET /_next/static/chunks/main.js 404 in 43ms
+ GET /_next/static/chunks/react-refresh.js 404 in 41ms
+ GET /_next/static/chunks/pages/_app.js 404 in 39ms
+ GET /_next/static/chunks/pages/_error.js 404 in 17ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 36ms
+ GET /_next/static/chunks/main.js 404 in 41ms
+ GET /_next/static/chunks/pages/_app.js 404 in 53ms
+ GET /_next/static/chunks/react-refresh.js 404 in 46ms
+ GET /_next/static/chunks/pages/_error.js 404 in 21ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 37ms
+ GET /_next/static/chunks/main.js 404 in 53ms
+ GET /_next/static/chunks/react-refresh.js 404 in 49ms
+ GET /_next/static/chunks/pages/_app.js 404 in 43ms
+ GET /_next/static/chunks/pages/_error.js 404 in 20ms
+ ○ Compiling /create ...
+ ✓ Compiled /create in 698ms (348 modules)
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\create.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\create.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/create'
+}
+ GET /create 500 in 735ms
+ GET /_next/static/chunks/main.js 404 in 20ms
+ GET /_next/static/chunks/react-refresh.js 404 in 23ms
+ GET /_next/static/chunks/pages/_app.js 404 in 22ms
+ GET /_next/static/chunks/pages/_error.js 404 in 10ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 32ms
+ GET /_next/static/chunks/main.js 404 in 37ms
+ GET /_next/static/chunks/react-refresh.js 404 in 33ms
+ GET /_next/static/chunks/pages/_app.js 404 in 29ms
+ GET /_next/static/chunks/pages/_error.js 404 in 13ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 29ms
+ GET /_next/static/chunks/main.js 404 in 40ms
+ GET /_next/static/chunks/react-refresh.js 404 in 35ms
+ GET /_next/static/chunks/pages/_app.js 404 in 33ms
+ GET /_next/static/chunks/pages/_error.js 404 in 16ms
+ GET /api/auth/session 404 in 14ms
+ GET /_next/static/chunks/main.js 404 in 33ms
+ GET /_next/static/chunks/pages/_app.js 404 in 31ms
+ GET /_next/static/chunks/react-refresh.js 404 in 29ms
+ GET /_next/static/chunks/pages/_error.js 404 in 13ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 22ms
+ GET /_next/static/chunks/react-refresh.js 404 in 35ms
+ GET /_next/static/chunks/main.js 404 in 30ms
+ GET /_next/static/chunks/pages/_app.js 404 in 27ms
+ GET /_next/static/chunks/pages/_error.js 404 in 14ms
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\_document.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\load-components.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\build\utils.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at mod.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:179:18)
+    at t.f.require (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:959)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:432
+    at Array.reduce (<anonymous>)
+    at t.e (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:411)
+    at Array.map (<anonymous>)
+    at t.X (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\webpack-runtime.js:1:732)
+    at C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:143:47
+    at Object.<anonymous> (C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\web\.next\server\pages\login.js:146:3)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\steff\\Desktop\\INK_Prototyp\\Pinky\\apps\\web\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/login'
+}
+ GET /login 500 in 26ms
+ GET /_next/static/chunks/main.js 404 in 39ms
+ GET /_next/static/chunks/react-refresh.js 404 in 36ms
+ GET /_next/static/chunks/pages/_app.js 404 in 33ms
+ GET /_next/static/chunks/pages/_error.js 404 in 14ms
+ GET /api/auth/csrf 404 in 15ms
+ GET /_next/static/chunks/main.js 404 in 32ms
+ GET /_next/static/chunks/react-refresh.js 404 in 28ms
+ GET /_next/static/chunks/pages/_app.js 404 in 26ms
+ GET /_next/static/chunks/pages/_error.js 404 in 15ms
+[?25h

@@ -1,0 +1,25 @@
+Analyzing mobile...                                             
+
+warning - The include file 'package:flutter_lints/flutter.yaml' in 'C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\mobile\analysis_options.yaml' can't be found when analyzing 'C:\Users\steff\Desktop\INK_Prototyp\Pinky\apps\mobile' - analysis_options.yaml:10:10 - include_file_not_found
+  error - Target of URI doesn't exist: '../../core/api_client.dart' - lib\features\auth\presentation\login_screen.dart:2:8 - uri_does_not_exist
+  error - Undefined name 'ApiClient' - lib\features\auth\presentation\login_screen.dart:24:27 - undefined_identifier
+  error - Target of URI doesn't exist: '../../core/api_client.dart' - lib\features\microtasks\presentation\microtask_detail_screen.dart:2:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../core/models.dart' - lib\features\microtasks\presentation\microtask_detail_screen.dart:3:8 - uri_does_not_exist
+  error - Undefined class 'MicroTaskDetail' - lib\features\microtasks\presentation\microtask_detail_screen.dart:22:3 - undefined_class
+  error - Undefined name 'ApiClient' - lib\features\microtasks\presentation\microtask_detail_screen.dart:38:26 - undefined_identifier
+  error - Target of URI doesn't exist: '../../core/api_client.dart' - lib\features\microtasks\presentation\microtask_list_screen.dart:2:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../core/models.dart' - lib\features\microtasks\presentation\microtask_list_screen.dart:3:8 - uri_does_not_exist
+  error - The name 'MicroTaskSummary' isn't a type, so it can't be used as a type argument - lib\features\microtasks\presentation\microtask_list_screen.dart:21:8 - non_type_as_type_argument
+  error - Undefined name 'ApiClient' - lib\features\microtasks\presentation\microtask_list_screen.dart:37:26 - undefined_identifier
+  error - Target of URI doesn't exist: '../../core/api_client.dart' - lib\features\workspace\presentation\workspace_screen.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../core/models.dart' - lib\features\workspace\presentation\workspace_screen.dart:4:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../microtasks/presentation/microtask_list_screen.dart' - lib\features\workspace\presentation\workspace_screen.dart:5:8 - uri_does_not_exist
+  error - The name 'Membership' isn't a type, so it can't be used as a type argument - lib\features\workspace\presentation\workspace_screen.dart:22:8 - non_type_as_type_argument
+  error - Undefined name 'ApiClient' - lib\features\workspace\presentation\workspace_screen.dart:41:33 - undefined_identifier
+  error - The property 'organization' can't be unconditionally accessed because the receiver can be 'null' - lib\features\workspace\presentation\workspace_screen.dart:78:43 - unchecked_use_of_nullable_value
+  error - The property 'organization' can't be unconditionally accessed because the receiver can be 'null' - lib\features\workspace\presentation\workspace_screen.dart:109:47 - unchecked_use_of_nullable_value
+  error - The property 'organization' can't be unconditionally accessed because the receiver can be 'null' - lib\features\workspace\presentation\workspace_screen.dart:111:45 - unchecked_use_of_nullable_value
+  error - The property 'role' can't be unconditionally accessed because the receiver can be 'null' - lib\features\workspace\presentation\workspace_screen.dart:111:78 - unchecked_use_of_nullable_value
+  error - The method 'MicroTaskListScreen' isn't defined for the type '_WorkspaceScreenState' - lib\features\workspace\presentation\workspace_screen.dart:131:55 - undefined_method
+warning - Unused import: 'package:flutter/material.dart' - test\widget_test.dart:8:8 - unused_import
+

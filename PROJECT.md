@@ -27,7 +27,7 @@ Pinky bricht diese großen, abstrakten Aufgabenkreistrukturen (z.B. "Sommerfest 
 
 ### 2.1 Aufgabensteller / Organisatoren (Admin Web App)
 **Nutzerprofil:** Vorstände, Projektverantwortliche, Trainer, Koordinatoren.
-**Werkzeug:** Eine Desktop-/Web-Anwendung (Next.js).
+**Werkzeug:** Eine Desktop-/Web-Anwendung (Next.js), namentlich das Admin Dashboard (`/admin`).
 **Hauptaufgaben:**
 - Anlegen und Verwalten von Organisationen (Vereinen) und deren Mitgliedern/Rollen.
 - Erstellen und Strukturieren von großen `Tasks` (Projekten).
@@ -42,7 +42,7 @@ Pinky bricht diese großen, abstrakten Aufgabenkreistrukturen (z.B. "Sommerfest 
 
 ### 2.2 Mitglieder / Ehrenamtliche (Mobile App)
 **Nutzerprofil:** Vereinsmitglieder, Helferinnen und Helfer.
-**Werkzeug:** Eine mobile App (Flutter).
+**Werkzeug:** Eine mobile App (Flutter) und die Web-Ansicht für Helfer (`/feed`).
 **Hauptaufgaben:**
 - Entdecken verfügbarer Micro-Tasks (Task-Feed).
 - Einfache Übernahme ("Assign") von passenden Micro-Tasks.
@@ -50,7 +50,8 @@ Pinky bricht diese großen, abstrakten Aufgabenkreistrukturen (z.B. "Sommerfest 
 - Beitreten von Warteschlangen (Queue-Intent) für aktuell vergebene Aufgaben.
 - Erhalten von relevanten Push-Benachrichtigungen.
 ## 2.3 Profile der Mitglieder
-- Nutzer sollen Alter, Sparte, Intressen, Qualifikationen bzw. Fähigkeiten, verfügbare Zeit pro Woche und Zeitraum angeben können.
+- Nutzer sollen Alter, Sparte, Interessen, Qualifikationen bzw. Fähigkeiten angeben können.
+- **Zeit-Budget:** Nutzer legen fest, wie viel Zeit (in Stunden/Minuten) sie pro Woche für Aufgaben aufwenden möchten. Diese Angabe ist flexibel und kann vom Nutzer jederzeit im eigenen Profil angepasst und hinterlegt werden.
 - Nutzer sollen angeben können in welchem Kontext sie Helfen können und möchten. Beispiel: Mutter von U13 Jungen möchte nur in der U13 aushelfen und hat Führerschein.
 
 ---
@@ -103,6 +104,12 @@ Wenn ein MicroTask bereits auf `ASSIGNED` steht, sich aber andere Mitglieder den
 - **Das Push-Prinzip (Override):** Ein `ORGANIZER` oder `ADMIN` kann über die Web-App gezielt einen MicroTask an ein Mitglied zuweisen.
 - **Einzigartigkeit:** Ein MicroTask hat zu exakt einem Zeitpunkt immer höchstens **eine** verantwortliche Person.
 
+## 4.1 Kalender-Export (iCal / WebCal)
+- Mitglieder sollen **ihre zugewiesenen Aufgaben** (`ASSIGNED`) in ihren persönlichen Kalender (Apple Calendar, Google Calendar, Outlook) integrieren können.
+- **Architektonische Unabhängigkeit:** Um den Lock-in in spezifische Plattform-APIs (wie Google Calendar API) zu vermeiden und maximal unabhängig zu bleiben, erfolgt der Export primär über einen **serverseitigen iCal (.ics) Feed** (WebCal).
+- Jedes Mitglied erhält eine eindeutige, persönliche und kryptografisch sichere Feed-URL (z. B. `/api/calendar/:feedToken.ics`), über die Kalender-Clients die Termine read-only abonnieren können. 
+- **1-Klick Single-Export:** Zusätzlich wird die Möglichkeit geschaffen, über einen direkten Download-Link (z. B. `Download .ics`) eine einzelne Aufgabe sofort in die Standard-Kalender-App des Endgeräts zu importieren.
+
 ---
 
 ## 5. Einsatz von KI (Unterstützend)
@@ -110,6 +117,7 @@ Wenn ein MicroTask bereits auf `ASSIGNED` steht, sich aber andere Mitglieder den
 Die KI fungiert im Projekt **rein unterstützend**.
 Die Entscheidungshohheit liegt immer beim menschlichen Nutzer (Organizer).
 - **Features:** KI-gestützte Zerlegung großer `Tasks` ("Organisation des Sommerfests") in detaillierte und sinnvolle `MicroTasks`.
+- **Kapazitäts- & Belastungsprüfung:** Bei der automatischen Verteilung/Vorschlägen von Aufgaben berücksichtigt die KI das vom Nutzer definierte wöchentliche Zeit-Budget. Die KI gleicht hierbei die Angabe im Profil zusätzlich damit ab, ob der User in den vorherigen Wochen auch *wirklich* die angegebene Zeit investiert hat (Historien-Abgleich), um realistisch zu planen und Überlastung zu verhindern.
 - **Zukunftsausblick:** Sortierung/Priorisierung im User-Feed basierend auf bisherigem Verhalten und Tags.
 - **Grenze:** KI erzeugt Entwürfe (Drafts), ein `ORGANIZER` muss diese sichten und per Knopfdruck freigeben.
 
